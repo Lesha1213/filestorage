@@ -1,0 +1,21 @@
+{
+    "name": "reactivestudio/filestorage",
+    "description": "Yii2 component for storage files",
+    "type": "library",
+    "require": {
+        "php": ">=7.2",
+        "yiisoft/yii2": "~2.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitriy Bushin",
+            "email": "dima.bushin@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "reactivestudio\\filestorage\\": "src"
+        }
+    }
+}
