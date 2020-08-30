@@ -49,7 +49,7 @@ Temporary Items
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
-.idea/*
+.idea/vcs.xml
 
 # Gradle
 .idea/**/gradle.xml
