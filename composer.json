@@ -15,7 +15,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "reactivestudio\\filestorage\\": "src"
+            "reactivestudio\\filestorage\\": "src/"
         }
     }
 }
