@@ -7,16 +7,16 @@ namespace reactivestudio\filestorage\migrations;
 use yii\db\Migration;
 
 /**
- * Migration to create a table structure {{%files}}
+ * Migration to create a table structure {{%image_previews}}
  * @package reactivestudio\filestorage\migrations
  */
-class m200617_215405_create__files__structure extends Migration
+class m200617_215410_create__image_previews__structure extends Migration
 {
     /**
      * Table name
      * @var string
      */
-    private $table = '{{%files}}';
+    private $table = '{{%image_previews}}';
 
     /**
      * Base encoding
@@ -43,88 +43,77 @@ class m200617_215405_create__files__structure extends Migration
                     ->integer()
                     ->notNull()
                     ->append('AUTO_INCREMENT PRIMARY KEY')
-                    ->comment('File identifier'),
+                    ->comment('Image preview identifier'),
+                'original_file_id' => $this
+                    ->integer()
+                    ->notNull()
+                    ->comment('Original file identifier for which the preview was created'),
                 'storage_name' => $this
                     ->string(255)
                     ->notNull()
-                    ->comment('Storage name of the file'),
+                    ->comment('Storage name of the image preview'),
                 'storage_status' => $this
                     ->tinyInteger(3)
                     ->notNull()
                     ->defaultValue(0)
-                    ->comment('Storage file status'),
-                'group' => $this
-                    ->string(100)
+                    ->comment('Storage image preview status'),
+                'name' => $this
+                    ->string(255)
                     ->notNull()
-                    ->comment('Group name of files'),
-                'related_entity_id' => $this
-                    ->integer()
-                    ->null()
-                    ->comment('Related entity identifier'),
+                    ->comment('Image preview name'),
                 'hash' => $this
                     ->string(255)
                     ->notNull()
-                    ->comment('File relative path and filename hash'),
-                'original_name' => $this
-                    ->string(255)
-                    ->notNull()
-                    ->comment('Original file name'),
-                'original_extension' => $this
-                    ->string(16)
-                    ->notNull()
-                    ->comment('Original file extension'),
+                    ->comment('Image Preview relative path and filename hash'),
                 'system_name' => $this
                     ->string(255)
                     ->notNull()
                     ->unique()
-                    ->comment('System file name, including extension'),
-                'display_name' => $this
-                    ->string(255)
-                    ->null()
-                    ->comment('Display file name, including extension'),
-                'mime' => $this
-                    ->string(255)
-                    ->notNull()
-                    ->comment('MIME-type of the file'),
+                    ->comment('System image preview name, including extension'),
                 'size' => $this
                     ->integer()
                     ->notNull()
                     ->unsigned()
                     ->defaultValue(0)
-                    ->comment('File size in bytes'),
+                    ->comment('Image preview size in bytes'),
                 'public_url' => $this
                     ->string(2048)
                     ->null()
-                    ->comment('Public URL for file download'),
+                    ->comment('Public URL for image preview download'),
                 'created_at' => $this
                     ->integer()
                     ->notNull()
-                    ->comment('Date and time of creating file, in unix timestamp format'),
+                    ->comment('Date and time of creating image preview, in unix timestamp format'),
                 'updated_at' => $this
                     ->integer()
                     ->notNull()
-                    ->comment('Date and time of updating file, in unix timestamp format'),
+                    ->comment('Date and time of updating image preview, in unix timestamp format'),
             ],
             $this->options()
         );
 
         /** Add comment to table */
-        $this->addCommentOnTable($this->table, 'Files');
+        $this->addCommentOnTable($this->table, 'Image previews');
 
-        /** Add index for the field `group` */
-        $this->createIndex('{{%idx__' . 'files' . '__group}}', $this->table, 'group');
-
-        /** Add index for the field `related_entity_id` */
-        $this->createIndex('{{%idx__' . 'files' . '__related_entity_id}}', $this->table, 'related_entity_id');
+        /** Add index for the field `name` */
+        $this->createIndex('{{%idx__' . 'image_previews' . '__name}}', $this->table, 'name');
 
         /** Add index for the field `hash` */
-        $this->createIndex('{{%idx__' . 'files' . '__hash}}', $this->table, 'hash');
+        $this->createIndex('{{%idx__' . 'image_previews' . '__hash}}', $this->table, 'hash');
 
         /** Add index for the field `created_at` */
-        $this->createIndex('{{%idx__' . 'files' . '__created_at}}', $this->table, 'created_at');
+        $this->createIndex('{{%idx__' . 'image_previews' . '__created_at}}', $this->table, 'created_at');
 
         /** Add index for the field `updated_at` */
-        $this->createIndex('{{%idx__' . 'files' . '__updated_at}}', $this->table, 'updated_at');
+        $this->createIndex('{{%idx__' . 'image_previews' . '__updated_at}}', $this->table, 'updated_at');
+
+        /** Add unique index for the fields `original_file_id`, `name` */
+        $this->createIndex(
+            '{{%unq__' . 'image_previews' . '__file_id_name}}',
+            $this->table,
+            ['original_file_id', 'name'],
+            true
+        );
     }
 
     /**
