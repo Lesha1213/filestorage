@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\models\base\preview;
 
-use Exception;
-use reactivestudio\filestorage\interfaces\OperationInterface;
 use reactivestudio\filestorage\interfaces\PreviewInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\base\AbstractImage;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
-use yii\helpers\ArrayHelper;
 
 /**
  * Base Image preview ActiveRecord class.
@@ -59,18 +56,6 @@ abstract class AbstractImagePreview extends ActiveRecord implements PreviewInter
             static::NAME_STANDARD,
             static::NAME_LARGE,
         ];
-    }
-
-    /**
-     * @param string $previewName
-     * @return OperationInterface|null
-     * @throws Exception
-     */
-    public static function findOperation(string $previewName): ?OperationInterface
-    {
-        /** @var OperationInterface $operation */
-        $operation = ArrayHelper::getValue(static::operations(), $previewName, null);
-        return $operation;
     }
 
     /**

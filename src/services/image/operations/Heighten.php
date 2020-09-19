@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace reactivestudio\filestorage\components\image\operations;
+namespace reactivestudio\filestorage\services\image\operations;
 
 use Intervention\Image\Image;
-use reactivestudio\filestorage\components\image\operations\base\AbstractOperation;
+use reactivestudio\filestorage\services\image\operations\base\AbstractOperation;
 use reactivestudio\filestorage\interfaces\OperationInterface;
 
-class Contain extends AbstractOperation
+class Heighten extends AbstractOperation
 {
     public function build(): OperationInterface
     {
@@ -20,8 +20,7 @@ class Contain extends AbstractOperation
 
     public function apply(Image $image): void
     {
-        $image->resize(
-            $this->resolution->getWidth(),
+        $image->heighten(
             $this->resolution->getHeight(),
             $this->getUpSizeCallback()
         );
@@ -32,7 +31,6 @@ class Contain extends AbstractOperation
     protected function arguments(): array
     {
         return [
-            $this->resolution->getWidth(),
             $this->resolution->getHeight(),
             $this->isUpSize,
         ];

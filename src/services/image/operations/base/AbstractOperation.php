@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace reactivestudio\filestorage\components\image\operations\base;
+namespace reactivestudio\filestorage\services\image\operations\base;
 
 use Intervention\Image\Constraint;
 use Intervention\Image\Image;
-use reactivestudio\filestorage\components\image\operations\dto\Position;
-use reactivestudio\filestorage\components\image\operations\dto\Quality;
-use reactivestudio\filestorage\components\image\operations\dto\Resolution;
-use reactivestudio\filestorage\components\image\operations\dto\Rotation;
-use reactivestudio\filestorage\components\image\operations\structures\OperationStack;
+use reactivestudio\filestorage\services\image\operations\dto\Position;
+use reactivestudio\filestorage\services\image\operations\dto\Quality;
+use reactivestudio\filestorage\services\image\operations\dto\Resolution;
+use reactivestudio\filestorage\services\image\operations\dto\Rotation;
+use reactivestudio\filestorage\services\image\operations\structures\OperationStack;
 use reactivestudio\filestorage\interfaces\OperationInterface;
 
 abstract class AbstractOperation implements OperationInterface

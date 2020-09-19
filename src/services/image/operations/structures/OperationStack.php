@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace reactivestudio\filestorage\components\image\operations\structures;
+namespace reactivestudio\filestorage\services\image\operations\structures;
 
 use reactivestudio\filestorage\interfaces\OperationInterface;
 use RuntimeException;

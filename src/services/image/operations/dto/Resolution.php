@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace reactivestudio\filestorage\components\image\operations\dto;
+namespace reactivestudio\filestorage\services\image\operations\dto;
 
 final class Resolution
 {

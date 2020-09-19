@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages;
 
-use reactivestudio\filestorage\components\HashService;
 use frostealth\yii2\aws\s3\interfaces\Service as S3ServiceInterface;
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
 use reactivestudio\filestorage\storages\dto\StorageFileInfo;
@@ -20,14 +20,20 @@ class AwsStorage extends AbstractStorage
      */
     private $s3Service;
 
-    public function __construct(
-        S3ServiceInterface $s3Service,
-        HashService $hashService,
-        string $webFilesDir,
-        ?string $baseUrl
-    ) {
+    /**
+     * @param S3ServiceInterface $s3Service
+     * {@inheritDoc}
+     */
+    public function __construct(S3ServiceInterface $s3Service, string $webFilesDir)
+    {
+        parent::__construct($webFilesDir);
+
         $this->s3Service = $s3Service;
-        parent::__construct($hashService, $webFilesDir, $baseUrl);
+    }
+
+    public function getName(): string
+    {
+        return 's3';
     }
 
     /**
@@ -38,14 +44,14 @@ class AwsStorage extends AbstractStorage
     {
         return $this->s3Service
             ->commands()
-            ->exist($this->hashService->decode($hash))
+            ->exist(HashHelper::decode($hash))
             ->execute();
     }
 
     public function put(StorageFileInfo $storageFileInfo): void
     {
         $relatedFilePath = $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
-        $hash = $this->hashService->encode($relatedFilePath);
+        $hash = HashHelper::encode($storageFileInfo->getRelativePath(), $storageFileInfo->getFileName());
 
         if ($this->isExists($hash)) {
             $this->remove($hash);
@@ -76,7 +82,7 @@ class AwsStorage extends AbstractStorage
 
         $isRemoved = $this->s3Service
             ->commands()
-            ->delete($this->hashService->decode($hash))
+            ->delete(HashHelper::decode($hash))
             ->execute();
 
         if (!$isRemoved) {
@@ -105,7 +111,7 @@ class AwsStorage extends AbstractStorage
     {
         return $this->s3Service
             ->commands()
-            ->getUrl($this->hashService->decode($hash))
+            ->getUrl(HashHelper::decode($hash))
             ->execute();
     }
 }

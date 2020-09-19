@@ -2,20 +2,23 @@
 
 declare(strict_types=1);
 
-namespace reactivestudio\filestorage\models\forms;
+namespace reactivestudio\filestorage\models\form;
 
 use reactivestudio\filestorage\models\base\AbstractFile;
 use yii\base\Model;
 use yii\web\UploadedFile;
-
-use function get_class;
 
 class FileForm extends Model
 {
     /**
      * @var AbstractFile
      */
-    public $fileEntity;
+    public $fileEntityClass;
+
+    /**
+     * @var bool
+     */
+    public $isForceMode = false;
 
     /**
      * @var UploadedFile
@@ -59,16 +62,17 @@ class FileForm extends Model
                 ['entityId'],
                 'exist',
                 'skipOnError' => true,
-                'targetClass' => get_class($this->fileEntity),
-                'targetAttribute' => ['entityId' => implode(',', $this->fileEntity::primaryKey())]
+                'targetClass' => $this->fileEntityClass,
+                'targetAttribute' => ['entityId' => 'id']
             ],
             ['displayName', 'string', 'max' => 255],
             [['createdAt', 'updatedAt'], 'integer'],
+            ['isForceMode', 'boolean'],
             [
                 ['uploadFile'],
                 'file',
                 'skipOnEmpty' => false,
-                'extensions' => $this->fileEntity::getAllowedExtensions(),
+                'extensions' => $this->fileEntityClass::getAllowedExtensions(),
                 'checkExtensionByMimeType' => false,
             ],
         ];

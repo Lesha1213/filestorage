@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages\base;
 
-use reactivestudio\filestorage\components\HashService;
+use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\storages\dto\StorageFileInfo;
@@ -25,11 +25,6 @@ abstract class AbstractStorage implements StorageInterface
     protected const TEMP_DIR = 'temp';
 
     /**
-     * @var HashService
-     */
-    protected $hashService;
-
-    /**
      * @var string
      */
     protected $webFilesDir;
@@ -43,17 +38,18 @@ abstract class AbstractStorage implements StorageInterface
     public $baseUrl;
 
     /**
-     * @param HashService $hashService
+     * @return string
+     */
+    abstract public function getName(): string;
+
+    /**
      * @param string $webFilesDir
-     * @param string|null $baseUrl
      *
      * @throws InvalidConfigException
      */
-    public function __construct(HashService $hashService, string $webFilesDir, ?string $baseUrl)
+    public function __construct(string $webFilesDir)
     {
-        $this->hashService = $hashService;
         $this->webFilesDir = $webFilesDir;
-        $this->baseUrl = $baseUrl;
 
         $this->checkDirs();
     }
@@ -93,7 +89,7 @@ abstract class AbstractStorage implements StorageInterface
      */
     public function take(string $hash): StorageFileInfo
     {
-        $path = $this->hashService->decode($hash);
+        $path = HashHelper::decode($hash);
         $path = FileHelper::normalizePath($path);
 
         return (new StorageFileInfo())

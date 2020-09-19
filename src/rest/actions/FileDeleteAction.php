@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\rest\actions;
 
-use reactivestudio\filestorage\components\FileService;
-use reactivestudio\filestorage\exceptions\FileServiceException;
-use reactivestudio\filestorage\interfaces\FileStrategyInterface;
+use reactivestudio\filestorage\exceptions\FileStrategyException;
+use reactivestudio\filestorage\exceptions\FileTypeServiceException;
+use reactivestudio\filestorage\services\FileService;
 use reactivestudio\filestorage\models\base\AbstractFile;
-use yii\base\InvalidConfigException;
 use yii\rest\Controller;
 use yii\rest\DeleteAction;
 use yii\web\NotFoundHttpException;
@@ -21,11 +20,6 @@ use Yii;
  */
 class FileDeleteAction extends DeleteAction
 {
-    /**
-     * @var string|null
-     */
-    public $fileStrategy;
-
     /**
      * @var FileService
      */
@@ -44,7 +38,6 @@ class FileDeleteAction extends DeleteAction
 
     /**
      * {@inheritdoc}
-     * @throws InvalidConfigException
      */
     public function run($id): void
     {
@@ -58,16 +51,9 @@ class FileDeleteAction extends DeleteAction
             call_user_func($this->checkAccess, $this->id, $model);
         }
 
-        if (null === $this->fileStrategy) {
-            throw new ServerErrorHttpException('File Strategy must be defined');
-        }
-
-        /** @var FileStrategyInterface $strategy */
-        $strategy = Yii::createObject($this->fileStrategy, [$this->fileService]);
-
         try {
-            $strategy->delete($model);
-        } catch (FileServiceException $e) {
+            $this->fileService->removeFromStorage($model);
+        } catch (FileStrategyException | FileTypeServiceException $e) {
             throw new ServerErrorHttpException(
                 "Failed to delete the object. Error: {$e->getMessage()}",
                 0,

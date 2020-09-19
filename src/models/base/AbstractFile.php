@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace reactivestudio\filestorage\models\base;
 
 use reactivestudio\filestorage\interfaces\FileQueryInterface;
+use reactivestudio\filestorage\interfaces\FileTypeInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\query\FileQuery;
 use yii\base\InvalidConfigException;
@@ -35,6 +36,8 @@ use Yii;
  * @property int $created_at Date and time of creating file, in unix timestamp format
  * @property int $updated_at Date and time of updating file, in unix timestamp format
  *
+ * @property-read FileTypeInterface $type
+ * @property-read string $relativePath
  * @property-read string $originalFullName Original file name with extension
  *
  * @package reactivestudio\filestorage\models\base
@@ -208,5 +211,18 @@ abstract class AbstractFile extends ActiveRecord
     public function getOriginalFullName(): string
     {
         return $this->original_name . '.' . $this->original_extension;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRelativePath(): string
+    {
+        $parts = [
+            $this::getGroupName(),
+            $this->related_entity_id,
+        ];
+
+        return implode(DIRECTORY_SEPARATOR, array_filter($parts));
     }
 }
