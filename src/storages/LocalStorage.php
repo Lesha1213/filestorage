@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages;
 
+use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
 use reactivestudio\filestorage\storages\dto\StorageFileInfo;
@@ -20,6 +21,23 @@ class LocalStorage extends AbstractStorage
      */
     private const FILES_DIR = 'files';
 
+    /**
+     * Если заданы права,то после создания файла они будут принудительно назначены
+     * @var int|null
+     */
+    public $fileMode;
+
+    /**
+     * @param int|null $fileMode
+     * {@inheritDoc}
+     */
+    public function __construct(string $webFilesDir, ?int $fileMode = null)
+    {
+        parent::__construct($webFilesDir);
+
+        $this->fileMode = $fileMode;
+    }
+
     public static function getStorageDirs(): array
     {
         return ArrayHelper::merge(
@@ -28,12 +46,17 @@ class LocalStorage extends AbstractStorage
         );
     }
 
+    public function getName(): string
+    {
+        return 'local';
+    }
+
     /**
      * {@inheritDoc}
      */
     public function isExists(string $hash): bool
     {
-        $path = FileHelper::normalizePath($this->hashService->decode($hash));
+        $path = FileHelper::normalizePath(HashHelper::decode($hash));
         return file_exists($path);
     }
 
@@ -49,6 +72,8 @@ class LocalStorage extends AbstractStorage
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
 
         StorageHelper::copy($storageFileInfo->getTempAbsolutePath(), $destination);
+
+
     }
 
     /**
@@ -61,7 +86,7 @@ class LocalStorage extends AbstractStorage
             return;
         }
 
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . $this->hashService->decode($hash);
+        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
         $path = FileHelper::normalizePath(Yii::getAlias($path));
 
         StorageHelper::deleteFile($path);
@@ -99,7 +124,7 @@ class LocalStorage extends AbstractStorage
      */
     protected function getPublicUrl(string $hash): string
     {
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . $this->hashService->decode($hash);
+        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
         $path = str_replace('\\', '/', $path);
 
         if (null !== $this->baseUrl) {

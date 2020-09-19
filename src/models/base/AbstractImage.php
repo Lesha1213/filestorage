@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace reactivestudio\filestorage\models\base;
 
 use Exception;
-use reactivestudio\filestorage\helpers\FileTypeHelper;
 use reactivestudio\filestorage\interfaces\PreviewInterface;
 use reactivestudio\filestorage\models\base\preview\AbstractImagePreview;
+use reactivestudio\filestorage\models\type\ImageType;
+use reactivestudio\filestorage\services\FileTypeService;
+use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
+use yii\di\NotInstantiableException;
 use yii\helpers\ArrayHelper;
+use Yii;
 
 /**
- * Class AbstractImage
- *
  * @property-read AbstractImagePreview[] $previews
- *
  * @package reactivestudio\filestorage\models\base
  */
 abstract class AbstractImage extends AbstractFile
@@ -31,19 +32,26 @@ abstract class AbstractImage extends AbstractFile
      */
     public static function getAllowedExtensions(): array
     {
-        return FileTypeHelper::getAllowedExtensionsForType(FileTypeHelper::TYPE_IMAGE);
+        /** @var ImageType $type */
+        $type = Yii::createObject(ImageType::class);
+        return $type->getAllowedExtensions();
     }
 
     /**
      * {@inheritDoc}
+     * @throws InvalidConfigException
+     * @throws NotInstantiableException
      */
     public function rules(): array
     {
+        /** @var FileTypeService $service */
+        $service = Yii::$container->get(FileTypeService::class);
+
         $rules = parent::rules();
         $rules[] = [
             ['original_extension'],
-            function () {
-                return FileTypeHelper::isImage($this);
+            function () use ($service) {
+                return $service->getType($this->mime)::getName() === ImageType::getName();
             }
         ];
 

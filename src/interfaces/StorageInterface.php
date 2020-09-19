@@ -24,6 +24,8 @@ interface StorageInterface
         self::STATUS_NEED_TO_REMOVE,
     ];
 
+    public function getName(): string;
+
     public function isExists(string $hash): bool;
 
     public function take(string $hash): StorageFileInfo;

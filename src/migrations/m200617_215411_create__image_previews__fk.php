@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-namespace reactivestudio\filestorage\migrations;
-
 use yii\db\Migration;
 
 /**
