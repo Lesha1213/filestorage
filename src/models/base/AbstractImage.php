@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace reactivestudio\filestorage\models\base;
 
 use Exception;
+use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
+use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\interfaces\PreviewInterface;
 use reactivestudio\filestorage\models\base\preview\AbstractImagePreview;
 use reactivestudio\filestorage\models\type\ImageType;
 use reactivestudio\filestorage\services\FileTypeService;
+use reactivestudio\filestorage\services\image\ImagePreviewService;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
 use yii\di\NotInstantiableException;
@@ -74,5 +77,23 @@ abstract class AbstractImage extends AbstractFile
     {
         return $this->hasMany(static::getPreviewEntityClass(), ['original_file_id' => 'id'])
             ->orderBy(['name' => SORT_ASC]);
+    }
+
+    /**
+     * @param string $previewName
+     *
+     * @return AbstractImagePreview
+     *
+     * @throws InvalidConfigException
+     * @throws NotInstantiableException
+     * @throws ImagePreviewServiceException
+     * @throws StorageException
+     */
+    protected function findPreview(string $previewName): AbstractImagePreview
+    {
+        /** @var ImagePreviewService $service */
+        $service = Yii::$container->get(ImagePreviewService::class);
+
+        return $service->getPreview($this, $previewName);
     }
 }

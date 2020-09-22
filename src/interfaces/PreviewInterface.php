@@ -15,5 +15,4 @@ interface PreviewInterface extends ActiveRecordInterface
      * @return string[]
      */
     public static function getPossibleNames(): array;
-    public static function findOperation(string $previewName): ?OperationInterface;
 }
