@@ -25,6 +25,23 @@ use Yii;
 abstract class AbstractImage extends AbstractFile
 {
     /**
+     * @var ImagePreviewService
+     */
+    protected $service;
+
+    /**
+     * {@inheritDoc}
+     * @throws InvalidConfigException
+     * @throws NotInstantiableException
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        $this->service = Yii::$container->get(ImagePreviewService::class);
+    }
+
+    /**
      * @return PreviewInterface
      */
     abstract public static function getPreviewEntityClass(): string;
@@ -85,15 +102,11 @@ abstract class AbstractImage extends AbstractFile
      * @return AbstractImagePreview
      *
      * @throws InvalidConfigException
-     * @throws NotInstantiableException
      * @throws ImagePreviewServiceException
      * @throws StorageException
      */
     protected function findPreview(string $previewName): AbstractImagePreview
     {
-        /** @var ImagePreviewService $service */
-        $service = Yii::$container->get(ImagePreviewService::class);
-
-        return $service->getPreview($this, $previewName);
+        return $this->service->getPreview($this, $previewName);
     }
 }

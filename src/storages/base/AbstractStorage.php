@@ -30,14 +30,6 @@ abstract class AbstractStorage implements StorageInterface
     protected $webFilesDir;
 
     /**
-     * Базовый URL, который будет подставляться при генерации url к файлу.
-     * Если не задан, то будет использован текущий хост
-     *
-     * @var string|null
-     */
-    public $baseUrl;
-
-    /**
      * @return string
      */
     abstract public function getName(): string;
