@@ -8,7 +8,6 @@ use reactivestudio\filestorage\exceptions\FileUploadHttpException;
 use reactivestudio\filestorage\exceptions\UploaderException;
 use reactivestudio\filestorage\uploaders\PostUploader;
 use yii\base\InvalidConfigException;
-use yii\helpers\Url;
 use yii\rest\CreateAction;
 use Yii;
 
@@ -37,10 +36,8 @@ class FileCreateAction extends CreateAction
             throw new FileUploadHttpException("File upload error: {$e->getMessage()}", 0, $e);
         }
 
-        $response = Yii::$app->getResponse();
-        $response->setStatusCode(201);
+        Yii::$app->getResponse()->setStatusCode(201);
 
-        $redirectUrl = Url::toRoute([$this->viewAction, 'id' => $entity->id], true);
-        $response->getHeaders()->set('Location', $redirectUrl);
+        return $entity;
     }
 }
