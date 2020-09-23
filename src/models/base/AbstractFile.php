@@ -44,6 +44,8 @@ use Yii;
  */
 abstract class AbstractFile extends ActiveRecord
 {
+    public const SCENARIO_UPLOAD = 'upload';
+
     /**
      * Group separator
      */
@@ -96,6 +98,27 @@ abstract class AbstractFile extends ActiveRecord
     public static function tableName(): string
     {
         return '{{%files}}';
+    }
+
+    public function scenarios(): array
+    {
+        $scenarios = [
+            static::SCENARIO_UPLOAD => [
+                'group',
+                'related_entity_id',
+                'hash',
+                'original_name',
+                'original_extension',
+                'system_name',
+                'display_name',
+                'mime',
+                'size',
+                'created_at',
+                'updated_at',
+            ],
+        ];
+
+        return ArrayHelper::merge(parent::scenarios(), $scenarios);
     }
 
     /**

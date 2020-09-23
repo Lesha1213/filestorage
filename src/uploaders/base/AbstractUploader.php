@@ -64,6 +64,7 @@ abstract class AbstractUploader implements UploaderInterface
             throw new UploaderException("Error with creating file entity: {$e->getMessage()}", 0, $e);
         }
 
+        $entity->scenario = $entity::SCENARIO_UPLOAD;
         $this->fillFileEntity($entity, $form);
 
         if (
@@ -75,6 +76,8 @@ abstract class AbstractUploader implements UploaderInterface
 
         $this->validateForm($form);
         $this->validateEntity($entity);
+
+        $entity->scenario = $entity::SCENARIO_DEFAULT;
 
         try {
             $this->fileService->putToStorage($entity, $form->uploadFile->tempName);
