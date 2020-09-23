@@ -12,8 +12,10 @@ class Widen extends AbstractOperation
 {
     public function build(): OperationInterface
     {
-        $rotate = (new Rotate())->setRotation($this->rotation);
-        $this->stack->push($rotate);
+        if (null !== $this->rotation) {
+            $rotate = (new Rotate())->setRotation($this->rotation);
+            $this->stack->push($rotate);
+        }
 
         return parent::build();
     }
