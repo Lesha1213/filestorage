@@ -65,7 +65,16 @@ abstract class AbstractUploader implements UploaderInterface
         }
 
         $this->fillFileEntity($entity, $form);
-        $this->validate($entity, $form);
+
+        if (
+            !$form->isForceMode
+            && $this->fileService->existsInStorage($entity->hash)
+        ) {
+            throw new UploaderException("File is already in storage with hash: {$entity->hash}");
+        }
+
+        $this->validateForm($form);
+        $this->validateEntity($entity);
 
         try {
             $this->fileService->putToStorage($entity, $form->uploadFile->tempName);
@@ -105,30 +114,28 @@ abstract class AbstractUploader implements UploaderInterface
     }
 
     /**
-     * @param AbstractFile $entity
      * @param FileForm $form
-     *
      * @throws UploaderException
      */
-    protected function validate(AbstractFile $entity, FileForm $form): void
+    protected function validateForm(FileForm $form): void
     {
-        if (
-            !$form->isForceMode
-            && $this->fileService->existsInStorage($entity->hash)
-        ) {
-            throw new UploaderException("File is already in storage with hash: {$entity->hash}");
-        }
-
         if (!$form->validate()) {
             throw new UploaderException(
                 'Uploader form validation errors: '
                 . VarDumper::dumpAsString($form->getErrorSummary(true))
             );
         }
+    }
 
+    /**
+     * @param AbstractFile $entity
+     * @throws UploaderException
+     */
+    protected function validateEntity(AbstractFile $entity): void
+    {
         if (!$entity->validate()) {
             throw new UploaderException(
-                "Uploader file entity: '{$form->fileEntityClass}' validation errors: "
+                'Uploader file entity validation errors: ' . PHP_EOL
                 . VarDumper::dumpAsString($entity->getErrorSummary(true))
             );
         }

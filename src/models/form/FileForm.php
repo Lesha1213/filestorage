@@ -58,15 +58,8 @@ class FileForm extends Model
                 ],
                 'required'
             ],
-            [
-                ['entityId'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => $this->fileEntityClass,
-                'targetAttribute' => ['entityId' => 'id']
-            ],
             ['displayName', 'string', 'max' => 255],
-            [['createdAt', 'updatedAt'], 'integer'],
+            [['entityId', 'createdAt', 'updatedAt'], 'integer'],
             ['isForceMode', 'boolean'],
             [
                 ['uploadFile'],
