@@ -27,7 +27,7 @@ abstract class AbstractImage extends AbstractFile
     /**
      * @return PreviewInterface
      */
-    abstract public static function getPreviewEntityClass(): PreviewInterface;
+    abstract public static function getPreviewEntityClass(): string;
 
     /**
      * @return string[]

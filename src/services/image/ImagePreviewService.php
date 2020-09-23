@@ -252,10 +252,11 @@ class ImagePreviewService
             $this->getPreviewFileName($operation, $previewName, $image->original_extension)
         );
 
-        $image->save($previewTempAbsolutePath);
+        $interventionImage->save($previewTempAbsolutePath, 100);
         $size = (int)filesize($previewTempAbsolutePath);
 
         $storagePreviewInfo = (new StorageFileInfo())
+            ->setTempAbsolutePath($previewTempAbsolutePath)
             ->setRelativePath($this->getPreviewRelativePath($image))
             ->setFileName($this->getPreviewFileName($operation, $previewName, $image->original_extension));
 

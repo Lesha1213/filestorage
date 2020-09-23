@@ -22,19 +22,25 @@ class LocalStorage extends AbstractStorage
     private const FILES_DIR = 'files';
 
     /**
+     * @var string|null
+     */
+    private $baseUrl;
+
+    /**
      * Если заданы права,то после создания файла они будут принудительно назначены
      * @var int|null
      */
-    public $fileMode;
+    private $fileMode;
 
     /**
      * @param int|null $fileMode
      * {@inheritDoc}
      */
-    public function __construct(string $webFilesDir, ?int $fileMode = null)
+    public function __construct(string $baseUrl, string $webFilesDir, ?int $fileMode = null)
     {
         parent::__construct($webFilesDir);
 
+        $this->baseUrl = $baseUrl;
         $this->fileMode = $fileMode;
     }
 
@@ -71,9 +77,14 @@ class LocalStorage extends AbstractStorage
             . $storageFileInfo->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
 
+        if (null !== $this->fileMode && !chmod($destination, $this->fileMode)) {
+            throw new StorageException("Cannot change file mode 'chmod' to {$this->fileMode}");
+        }
+
         StorageHelper::copy($storageFileInfo->getTempAbsolutePath(), $destination);
 
-
+        $hash = HashHelper::encode($storageFileInfo->getRelativePath(), $storageFileInfo->getFileName());
+        $storageFileInfo->setPublicUrl($this->getPublicUrl($hash));
     }
 
     /**
@@ -124,13 +135,13 @@ class LocalStorage extends AbstractStorage
      */
     protected function getPublicUrl(string $hash): string
     {
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
+        $path = static::STORAGE_DIR . DIRECTORY_SEPARATOR
+            . static::FILES_DIR . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
+
         $path = str_replace('\\', '/', $path);
 
-        if (null !== $this->baseUrl) {
-            return Url::to($this->baseUrl . '/' . $path, true);
-        }
-
-        return Url::base(true) . $path;
+        return null !== $this->baseUrl
+            ? Url::to($this->baseUrl . '/' . $path, true)
+            : Url::base(true) . $path;
     }
 }
