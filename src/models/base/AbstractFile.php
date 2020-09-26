@@ -145,7 +145,7 @@ abstract class AbstractFile extends ActiveRecord
             [['storage_status'], 'in', 'range' => StorageInterface::STATUSES],
             [['storage_status'], 'default', 'value' => StorageInterface::STATUS_NOT_IN_STORAGE],
             [['storage_name', 'original_name', 'system_name', 'display_name', 'mime'], 'string', 'max' => 255],
-            ['hash', 'string', 'max' => 1024],
+            ['hash', 'string', 'max' => 512],
             [['group'], 'string', 'max' => 100],
             [['group'], 'in', 'range' => [static::getGroupName()]],
             [['original_extension'], 'string', 'max' => 16],

@@ -90,7 +90,8 @@ abstract class AbstractImagePreview extends ActiveRecord implements PreviewInter
             [['storage_status'], 'in', 'range' => StorageInterface::STATUSES],
             [['storage_status'], 'default', 'value' => StorageInterface::STATUS_NOT_IN_STORAGE],
             [['storage_name', 'name', 'system_name'], 'string', 'max' => 255],
-            [['hash', 'preview_config'], 'string', 'max' => 1024],
+            ['hash', 'string', 'max' => 512],
+            ['preview_config', 'string', 'max' => 1024],
             [['name'], 'in', 'range' => static::getPossibleNames()],
             [['name'], 'unique', 'targetAttribute' => ['original_file_id', 'name']],
             [

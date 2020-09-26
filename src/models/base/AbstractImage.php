@@ -105,6 +105,6 @@ abstract class AbstractImage extends AbstractFile
     {
         return $buildIfNeeded
             ? $this->service->getPreview($this, $previewName)
-            : $this->getRelation($this, $previewName);
+            : $this->service->getRelationQuery($this, $previewName);
     }
 }
