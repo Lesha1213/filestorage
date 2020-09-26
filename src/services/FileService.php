@@ -8,6 +8,8 @@ use Exception;
 use reactivestudio\filestorage\exceptions\FileServiceException;
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\FileTypeServiceException;
+use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsNotFoundException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
@@ -65,6 +67,8 @@ class FileService
     /**
      * @param AbstractFile $file
      * @return StorageObject
+     * @throws StorageException
+     * @throws StorageObjectIsNotFoundException
      */
     public function takeFromStorage(AbstractFile $file): StorageObject
     {

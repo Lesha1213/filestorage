@@ -9,6 +9,7 @@ use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsNotFoundException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
@@ -77,6 +78,7 @@ class ImagePreviewService
      * @throws InvalidConfigException
      * @throws StorageException
      * @throws StorageObjectIsAlreadyExistsException
+     * @throws StorageObjectIsNotFoundException
      */
     public function getPreview(AbstractImage $image, string $previewName): AbstractImagePreview
     {
@@ -101,6 +103,7 @@ class ImagePreviewService
      * @throws InvalidConfigException
      * @throws StorageException
      * @throws StorageObjectIsAlreadyExistsException
+     * @throws StorageObjectIsNotFoundException
      */
     public function reCreatePreview(AbstractImage $image, string $previewName): void
     {
@@ -116,6 +119,7 @@ class ImagePreviewService
      * @throws InvalidConfigException
      * @throws StorageException
      * @throws StorageObjectIsAlreadyExistsException
+     * @throws StorageObjectIsNotFoundException
      */
     public function createPreviews(AbstractImage $image): void
     {
@@ -141,6 +145,7 @@ class ImagePreviewService
      * @throws InvalidConfigException
      * @throws StorageException
      * @throws StorageObjectIsAlreadyExistsException
+     * @throws StorageObjectIsNotFoundException
      */
     public function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
     {
