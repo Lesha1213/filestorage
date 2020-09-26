@@ -19,7 +19,6 @@ use reactivestudio\filestorage\helpers\HashHelper;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
-use yii\db\StaleObjectException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use Yii;
@@ -155,7 +154,7 @@ class ImagePreviewService
         if (!$this->isPreviewInStorage($preview)) {
             try {
                 $preview->delete();
-            } catch (StaleObjectException | Throwable $e) {
+            } catch (Throwable $e) {
                 throw new ImagePreviewServiceException(
                     "Error with removing image preview entity: {$e->getMessage()}"
                 );
