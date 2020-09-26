@@ -7,10 +7,11 @@ namespace reactivestudio\filestorage\services\image;
 use Exception;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
+use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
-use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\interfaces\OperationInterface;
 use reactivestudio\filestorage\models\base\AbstractImage;
@@ -75,6 +76,7 @@ class ImagePreviewService
      * @throws ImagePreviewServiceException
      * @throws InvalidConfigException
      * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     public function getPreview(AbstractImage $image, string $previewName): AbstractImagePreview
     {
@@ -98,6 +100,7 @@ class ImagePreviewService
      * @throws ImagePreviewServiceException
      * @throws InvalidConfigException
      * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     public function reCreatePreview(AbstractImage $image, string $previewName): void
     {
@@ -112,11 +115,12 @@ class ImagePreviewService
      * @throws ImagePreviewServiceException
      * @throws InvalidConfigException
      * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     public function createPreviews(AbstractImage $image): void
     {
         $storageFileInfo = $this->storage->take($image->hash);
-        $this->storage->copyToTemp($storageFileInfo);
+        $this->storage->copyFromStorageToTemp($storageFileInfo);
 
         $interventionImage = $this->imageManager->make($storageFileInfo->getTempAbsolutePath());
 
@@ -136,11 +140,12 @@ class ImagePreviewService
      * @throws ImagePreviewServiceException
      * @throws InvalidConfigException
      * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     public function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
     {
         $storageFileInfo = $this->storage->take($image->hash);
-        $this->storage->copyToTemp($storageFileInfo);
+        $this->storage->copyFromStorageToTemp($storageFileInfo);
 
         $interventionImage = $this->imageManager->make($storageFileInfo->getTempAbsolutePath());
 
@@ -235,8 +240,9 @@ class ImagePreviewService
      * @return AbstractImagePreview
      *
      * @throws ImagePreviewServiceException
-     * @throws StorageException
      * @throws InvalidConfigException
+     * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     private function buildPreview(
         AbstractImage $image,

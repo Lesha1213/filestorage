@@ -55,6 +55,7 @@ class StorageHelper
 
     /**
      * If destination file is existed, then file wil be overwritten
+     *
      * @param string $source
      * @param string $destination
      *
@@ -66,7 +67,11 @@ class StorageHelper
         self::touchDir($dir);
 
         if (!copy($source, $destination)) {
-            throw new StorageException("Cannot copy file. \n Source: {$source}. \n Destination: {$destination}");
+            throw new StorageException(
+                "Cannot copy file. \n 
+                Source: {$source}. \n 
+                Destination: {$destination}"
+            );
         }
     }
 

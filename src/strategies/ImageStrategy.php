@@ -7,6 +7,7 @@ namespace reactivestudio\filestorage\strategies;
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\base\AbstractFile;
 use reactivestudio\filestorage\models\base\AbstractImage;
@@ -35,8 +36,9 @@ class ImageStrategy extends AbstractStrategy
      * @param string $tempFilePath
      *
      * @throws FileStrategyException
-     * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      * @throws ImagePreviewServiceException
+     * @throws StorageException
      * @throws InvalidConfigException
      */
     public function put(AbstractFile $file, string $tempFilePath): void

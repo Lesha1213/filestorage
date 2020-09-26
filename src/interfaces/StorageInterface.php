@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\interfaces;
 
-use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\storages\dto\StorageObject;
+use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 
 /**
  * Интерфейс хранилища файлов
@@ -38,12 +39,13 @@ interface StorageInterface
     /**
      * @param StorageObject $storageObject
      * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     public function put(StorageObject $storageObject): void;
 
     public function remove(string $hash): void;
 
-    public function copyToTemp(StorageObject $storageFileInfo): void;
+    public function copyFromStorageToTemp(StorageObject $storageObject): void;
 
-    public function removeFromTemp(StorageObject $storageFileInfo): void;
+    public function removeFromTemp(StorageObject $storageObject): void;
 }

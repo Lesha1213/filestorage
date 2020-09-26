@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages;
 
+use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
 use reactivestudio\filestorage\storages\dto\StorageObject;
-use reactivestudio\filestorage\exceptions\StorageException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\Url;
@@ -68,72 +68,77 @@ class LocalStorage extends AbstractStorage
 
     /**
      * @param StorageObject $storageObject
-     * @throws StorageException in case problem with putting file to storage
+     * @throws StorageException in case problem with coping file to temp
      */
-    public function put(StorageObject $storageObject): void
+    public function copyFromStorageToTemp(StorageObject $storageObject): void
+    {
+        $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getFileName();
+        $path = FileHelper::normalizePath(Yii::getAlias($path));
+
+        $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageObject->getFileName();
+        $destination = FileHelper::normalizePath(Yii::getAlias($destination));
+
+        StorageHelper::copy($path, $destination);
+        $storageObject->setTempAbsolutePath($destination);
+    }
+
+    /**
+     * @param string $tempPath
+     * @param string $destination
+     * @return bool
+     */
+    protected function copyFromTempToStorage(string $tempPath, string $destination): bool
+    {
+        try {
+            StorageHelper::copy($tempPath, $destination);
+        } catch (StorageException $e) {
+            Yii::warning($e->getMessage());
+            return false;
+        }
+
+        if (null !== $this->fileMode && !chmod($destination, $this->fileMode)) {
+            Yii::warning("Cannot change file mode 'chmod' to {$this->fileMode}");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param StorageObject $storageObject
+     * @return string
+     */
+    protected function buildFileDestination(StorageObject $storageObject): string
     {
         $destination = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
             . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
             . $storageObject->getFileName();
-        $destination = FileHelper::normalizePath(Yii::getAlias($destination));
 
-        if (null !== $this->fileMode && !chmod($destination, $this->fileMode)) {
-            throw new StorageException("Cannot change file mode 'chmod' to {$this->fileMode}");
-        }
-
-        StorageHelper::copy($storageObject->getTempAbsolutePath(), $destination);
-
-        $hash = HashHelper::encode($storageObject->getRelativePath(), $storageObject->getFileName());
-        $storageObject->setPublicUrl($this->getPublicUrl($hash));
+        return FileHelper::normalizePath(Yii::getAlias($destination));
     }
 
-    /**
-     * @param string $hash
-     * @throws StorageException
-     */
-    public function remove(string $hash): void
+    protected function removeFromStorage(string $hash): bool
     {
-        if (!$this->isExists($hash)) {
-            return;
-        }
-
         $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
         $path = FileHelper::normalizePath(Yii::getAlias($path));
 
-        StorageHelper::deleteFile($path);
-    }
+        try {
+            StorageHelper::deleteFile($path);
+        } catch (StorageException $e) {
+            Yii::warning($e->getMessage());
+            return false;
+        }
 
-    /**
-     * @param StorageObject $storageFileInfo
-     * @throws StorageException in case problem with coping file to temp
-     */
-    public function copyToTemp(StorageObject $storageFileInfo): void
-    {
-        $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getFileName();
-        $path = FileHelper::normalizePath(Yii::getAlias($path));
-
-        $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
-        $destination = FileHelper::normalizePath(Yii::getAlias($destination));
-
-        StorageHelper::copy($path, $destination);
-        $storageFileInfo->setTempAbsolutePath($destination);
-    }
-
-    /**
-     * @return string
-     */
-    private function getContainerAbsolutePath(): string
-    {
-        return $this->webFilesDir . DIRECTORY_SEPARATOR . static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::CONTAINERS_DIR;
+        return true;
     }
 
     /**
      * @param string $hash
      * @return string
      */
-    protected function getPublicUrl(string $hash): string
+    protected function buildPublicUrl(string $hash): string
     {
         $path = static::STORAGE_DIR . DIRECTORY_SEPARATOR
             . static::CONTAINERS_DIR . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
@@ -143,5 +148,13 @@ class LocalStorage extends AbstractStorage
         return null !== $this->baseUrl
             ? Url::to($this->baseUrl . '/' . $path, true)
             : Url::base(true) . $path;
+    }
+
+    /**
+     * @return string
+     */
+    private function getContainerAbsolutePath(): string
+    {
+        return $this->webFilesDir . DIRECTORY_SEPARATOR . static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::CONTAINERS_DIR;
     }
 }

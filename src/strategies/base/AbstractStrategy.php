@@ -6,6 +6,7 @@ namespace reactivestudio\filestorage\strategies\base;
 
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
@@ -31,8 +32,9 @@ abstract class AbstractStrategy implements FileStrategyInterface
      * @param AbstractFile $file
      * @param string $tempFilePath
      *
-     * @throws StorageException
      * @throws FileStrategyException
+     * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     public function put(AbstractFile $file, string $tempFilePath): void
     {

@@ -7,6 +7,7 @@ namespace reactivestudio\filestorage\models\base;
 use Exception;
 use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use reactivestudio\filestorage\interfaces\PreviewInterface;
 use reactivestudio\filestorage\models\base\preview\AbstractImagePreview;
 use reactivestudio\filestorage\models\type\ImageType;
@@ -104,6 +105,7 @@ abstract class AbstractImage extends AbstractFile
      * @throws InvalidConfigException
      * @throws ImagePreviewServiceException
      * @throws StorageException
+     * @throws StorageObjectIsAlreadyExistsException
      */
     protected function findPreview(string $previewName): AbstractImagePreview
     {

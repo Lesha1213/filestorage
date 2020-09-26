@@ -37,6 +37,11 @@ class StorageObject
     private $isUploaded = false;
 
     /**
+     * @var bool
+     */
+    private $isForceMode = true;
+
+    /**
      * @return string
      */
     public function getRelativePath(): string
@@ -141,6 +146,24 @@ class StorageObject
     public function setUploadState(bool $isUploaded): self
     {
         $this->isUploaded = $isUploaded;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isForceMode(): bool
+    {
+        return $this->isForceMode;
+    }
+
+    /**
+     * @param bool $isForceMode
+     * @return StorageObject
+     */
+    public function setForceMode(bool $isForceMode): self
+    {
+        $this->isForceMode = $isForceMode;
         return $this;
     }
 }
