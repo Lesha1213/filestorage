@@ -98,7 +98,7 @@ class ImagePreviewService
         if (
             null === $preview
             || !$this->isPreviewInStorage($preview)
-            || $this->isPreviewActual($image, $preview)
+            || !$this->isPreviewActual($image, $preview)
         ) {
             $preview = $this->createPreview($image, $previewName);
         }
@@ -151,19 +151,17 @@ class ImagePreviewService
      */
     public function clearPreview(AbstractImagePreview $preview): void
     {
-        if (!$this->isPreviewInStorage($preview)) {
-            try {
-                $preview->delete();
-            } catch (Throwable $e) {
-                throw new ImagePreviewServiceException(
-                    "Error with removing image preview entity: {$e->getMessage()}"
-                );
-            }
-
-            return;
+        if ($this->isPreviewInStorage($preview)) {
+            $this->storage->remove($preview->hash);
         }
 
-        $this->storage->remove($preview->hash);
+        try {
+            $preview->delete();
+        } catch (Throwable $e) {
+            throw new ImagePreviewServiceException(
+                "Error with removing image preview entity: {$e->getMessage()}"
+            );
+        }
     }
 
     /**

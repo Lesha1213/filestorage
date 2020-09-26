@@ -121,7 +121,7 @@ abstract class AbstractOperation implements OperationInterface
     {
         $values = [];
         foreach ($this->arguments() as $argument) {
-            $values[] = $argument . ':' .  $this->argumentToString($argument);
+            $values[] = $this->argumentToString($argument);
         }
 
         return implode(';', $values);
