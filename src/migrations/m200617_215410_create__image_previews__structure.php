@@ -60,9 +60,13 @@ class m200617_215410_create__image_previews__structure extends Migration
                     ->notNull()
                     ->comment('Image preview name'),
                 'hash' => $this
-                    ->string(255)
+                    ->string(1024)
                     ->notNull()
                     ->comment('Image Preview relative path and filename hash'),
+                'preview_config' => $this
+                    ->string(1024)
+                    ->notNull()
+                    ->comment('Image Preview config as string'),
                 'system_name' => $this
                     ->string(255)
                     ->notNull()
