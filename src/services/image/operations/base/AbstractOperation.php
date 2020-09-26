@@ -117,14 +117,14 @@ abstract class AbstractOperation implements OperationInterface
         return $this;
     }
 
-    public function getSystemName(): string
+    public function getConfig(): string
     {
         $values = [];
         foreach ($this->arguments() as $argument) {
-            $values[] = $this->argumentToString($argument);
+            $values[] = $argument . ':' .  $this->argumentToString($argument);
         }
 
-        return implode('_', $values);
+        return implode(';', $values);
     }
 
     /**

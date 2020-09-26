@@ -55,30 +55,28 @@ class StorageHelper
 
     /**
      * If destination file is existed, then file wil be overwritten
+     *
      * @param string $source
      * @param string $destination
      *
+     * @return bool
      * @throws StorageException
      */
-    public static function copy(string $source, string $destination): void
+    public static function copy(string $source, string $destination): bool
     {
         $dir = self::getDirName($destination);
         self::touchDir($dir);
 
-        if (!copy($source, $destination)) {
-            throw new StorageException("Cannot copy file. \n Source: {$source}. \n Destination: {$destination}");
-        }
+        return copy($source, $destination);
     }
 
     /**
      * @param string $path
-     * @throws StorageException
+     * @return bool
      */
-    public static function deleteFile(string $path): void
+    public static function deleteFile(string $path): bool
     {
-        if (!@unlink($path)) {
-            throw new StorageException("Cannot remove file with path: {$path}");
-        }
+        return @unlink($path);
     }
 
     /**

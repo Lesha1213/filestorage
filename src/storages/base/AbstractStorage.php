@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages\base;
 
+use reactivestudio\filestorage\interfaces\StorageInterface;
+use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
-use reactivestudio\filestorage\interfaces\StorageInterface;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
-use reactivestudio\filestorage\exceptions\StorageException;
-use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
 
 abstract class AbstractStorage implements StorageInterface
@@ -30,21 +29,19 @@ abstract class AbstractStorage implements StorageInterface
     protected $webFilesDir;
 
     /**
-     * @return string
-     */
-    abstract public function getName(): string;
-
-    /**
      * @param string $webFilesDir
-     *
-     * @throws InvalidConfigException
+     * @throws StorageException
      */
     public function __construct(string $webFilesDir)
     {
         $this->webFilesDir = $webFilesDir;
-
         $this->checkDirs();
     }
+
+    /**
+     * @return string
+     */
+    abstract public function getName(): string;
 
     /**
      * @param string $hash
@@ -52,17 +49,24 @@ abstract class AbstractStorage implements StorageInterface
      */
     abstract public function isExists(string $hash): bool;
 
+    abstract public function copyToTemp(StorageObject $storageObject): void;
+
     /**
-     * @param StorageFileInfo $storageFileInfo
-     * @throws StorageException
+     * @param string $tempPath
+     * @param string $destination
+     * @return bool
      */
-    abstract public function put(StorageFileInfo $storageFileInfo): void;
+    abstract protected function copyToStorage(string $tempPath, string $destination): bool;
 
-    abstract public function remove(string $hash): void;
+    /**
+     * @param StorageObject $storageObject
+     * @return string
+     */
+    abstract protected function buildFileDestination(StorageObject $storageObject): string;
 
-    abstract public function copyToTemp(StorageFileInfo $storageFileInfo): void;
+    abstract protected function buildPublicUrl(string $hash): string;
 
-    abstract protected function getPublicUrl(string $hash): string;
+    abstract protected function removeFromStorage(string $hash): bool;
 
     /**
      * @return string[]
@@ -77,27 +81,83 @@ abstract class AbstractStorage implements StorageInterface
 
     /**
      * @param string $hash
-     * @return StorageFileInfo
+     * @return StorageObject
+     * @throws StorageException
      */
-    public function take(string $hash): StorageFileInfo
+    public function take(string $hash): StorageObject
     {
+        if (!$this->isExists($hash)) {
+            throw new StorageException("Storage object is not found with hash: {$hash}");
+        }
+
         $path = HashHelper::decode($hash);
         $path = FileHelper::normalizePath($path);
 
-        return (new StorageFileInfo())
+        return (new StorageObject())
             ->setRelativePath(StorageHelper::getDirName($path))
             ->setFileName(StorageHelper::getFileName($path))
-            ->setPublicUrl($this->getPublicUrl($hash))
-            ->setAvailability($this->isExists($hash));
+            ->setPublicUrl($this->buildPublicUrl($hash))
+            ->setAvailability(true);
     }
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageObject
      * @throws StorageException
      */
-    public function removeFromTemp(StorageFileInfo $storageFileInfo): void
+    public function put(StorageObject $storageObject): void
     {
-        StorageHelper::deleteFile($storageFileInfo->getTempAbsolutePath());
+        $hash = HashHelper::encode($storageObject->getRelativePath(), $storageObject->getFileName());
+
+        if ($this->isExists($hash)) {
+            if ($storageObject->isForceMode()) {
+                $this->remove($hash);
+            } else {
+                throw new StorageException(
+                    "Storage object is already exists with hash: {$hash}"
+                );
+            }
+        }
+
+        $destination = $this->buildFileDestination($storageObject);
+        $isCopied = $this->copyToStorage($storageObject->getTempAbsolutePath(), $destination);
+
+        if (!$isCopied) {
+            throw new StorageException(
+                "File put in storage error. \n 
+                Temp path: {$storageObject->getTempAbsolutePath()}, \n
+                Destination: {$destination}"
+            );
+        }
+
+        $storageObject->setPublicUrl($this->buildPublicUrl($hash));
+    }
+
+    /**
+     * @param string $hash
+     * @throws StorageException
+     */
+    public function remove(string $hash): void
+    {
+        if (!$this->isExists($hash)) {
+            return;
+        }
+
+        if (!$this->removeFromStorage($hash)) {
+            throw new StorageException("File is not removed from storage with hash: {$hash}");
+        }
+    }
+
+    /**
+     * @param StorageObject $storageObject
+     * @throws StorageException
+     */
+    public function removeFromTemp(StorageObject $storageObject): void
+    {
+        if (!StorageHelper::deleteFile($storageObject->getTempAbsolutePath())) {
+            throw new StorageException(
+                "Cannot remove file from temp with path: {$storageObject->getTempAbsolutePath()}"
+            );
+        }
     }
 
     /**
@@ -110,20 +170,13 @@ abstract class AbstractStorage implements StorageInterface
 
     /**
      * Checks directories
-     * @throws InvalidConfigException in case there is a problem with creation directory
+     * @throws StorageException in case there is a problem with creation directory
      */
     protected function checkDirs(): void
     {
         foreach (static::getStorageDirs() as $dir) {
             $path = $this->webFilesDir . DIRECTORY_SEPARATOR . $dir;
-
-            try {
-                StorageHelper::touchDir($path);
-            } catch (StorageException $e) {
-                throw new InvalidConfigException(
-                    "Cannot create storageDir: {$path}. \n Error: {$e->getMessage()}"
-                );
-            }
+            StorageHelper::touchDir($path);
         }
     }
 }

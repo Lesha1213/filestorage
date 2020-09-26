@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\interfaces;
 
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 
 /**
  * Интерфейс хранилища файлов
@@ -28,17 +28,22 @@ interface StorageInterface
 
     public function isExists(string $hash): bool;
 
-    public function take(string $hash): StorageFileInfo;
+    /**
+     * @param string $hash
+     * @return StorageObject
+     * @throws StorageException in case storage object is not found
+     */
+    public function take(string $hash): StorageObject;
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageObject
      * @throws StorageException
      */
-    public function put(StorageFileInfo $storageFileInfo): void;
+    public function put(StorageObject $storageObject): void;
 
     public function remove(string $hash): void;
 
-    public function copyToTemp(StorageFileInfo $storageFileInfo): void;
+    public function copyToTemp(StorageObject $storageObject): void;
 
-    public function removeFromTemp(StorageFileInfo $storageFileInfo): void;
+    public function removeFromTemp(StorageObject $storageObject): void;
 }

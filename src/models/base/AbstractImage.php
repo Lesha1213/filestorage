@@ -6,7 +6,6 @@ namespace reactivestudio\filestorage\models\base;
 
 use Exception;
 use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
-use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\interfaces\PreviewInterface;
 use reactivestudio\filestorage\models\base\preview\AbstractImagePreview;
 use reactivestudio\filestorage\models\type\ImageType;
@@ -92,21 +91,20 @@ abstract class AbstractImage extends AbstractFile
      */
     public function getPreviews(): ActiveQuery
     {
-        return $this->hasMany(static::getPreviewEntityClass(), ['original_file_id' => 'id'])
-            ->orderBy(['name' => SORT_ASC]);
+        return $this->service->getRelationQuery($this);
     }
 
     /**
      * @param string $previewName
+     * @param bool $buildIfNeeded
      *
-     * @return AbstractImagePreview
-     *
-     * @throws InvalidConfigException
+     * @return AbstractImagePreview|ActiveQuery
      * @throws ImagePreviewServiceException
-     * @throws StorageException
      */
-    protected function findPreview(string $previewName): AbstractImagePreview
+    protected function findPreview(string $previewName, bool $buildIfNeeded = false)
     {
-        return $this->service->getPreview($this, $previewName);
+        return $buildIfNeeded
+            ? $this->service->getPreview($this, $previewName)
+            : $this->getRelation($this, $previewName);
     }
 }

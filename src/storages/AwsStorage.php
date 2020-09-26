@@ -9,7 +9,7 @@ use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use yii\helpers\FileHelper;
 use Yii;
 
@@ -48,66 +48,58 @@ class AwsStorage extends AbstractStorage
             ->execute();
     }
 
-    public function put(StorageFileInfo $storageFileInfo): void
-    {
-        $relatedFilePath = $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
-        $hash = HashHelper::encode($storageFileInfo->getRelativePath(), $storageFileInfo->getFileName());
-
-        if ($this->isExists($hash)) {
-            $this->remove($hash);
-        }
-
-        $result = $this->s3Service
-            ->commands()
-            ->upload($relatedFilePath, $storageFileInfo->getTempAbsolutePath())
-            ->withCacheControl()
-            ->execute();
-
-        if (!$result) {
-            throw new StorageException(
-                "File put in storage error for temp path: {$storageFileInfo->getTempAbsolutePath()}"
-            );
-        }
-    }
-
     /**
-     * @param string $hash
+     * @param StorageObject $storageObject
      * @throws StorageException
      */
-    public function remove(string $hash): void
+    public function copyToTemp(StorageObject $storageObject): void
     {
-        if (!$this->isExists($hash)) {
-            return;
-        }
-
-        $isRemoved = $this->s3Service
-            ->commands()
-            ->delete(HashHelper::decode($hash))
-            ->execute();
-
-        if (!$isRemoved) {
-            throw new StorageException("File is not removed from storage with hash: {$hash}");
-        }
-    }
-
-    /**
-     * @param StorageFileInfo $storageFileInfo
-     * @throws StorageException
-     */
-    public function copyToTemp(StorageFileInfo $storageFileInfo): void
-    {
-        $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
+        $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageObject->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
 
-        $tempFilePath = StorageHelper::downloadFile($storageFileInfo->getPublicUrl());
+        $tempFilePath = StorageHelper::downloadFile($storageObject->getPublicUrl());
 
         StorageHelper::copy($tempFilePath, $destination);
         StorageHelper::deleteFile($tempFilePath);
 
-        $storageFileInfo->setTempAbsolutePath($destination);
+        $storageObject->setTempAbsolutePath($destination);
     }
 
-    protected function getPublicUrl(string $hash): string
+    /**
+     * @param string $tempPath
+     * @param string $destination
+     * @return bool
+     */
+    protected function copyToStorage(string $tempPath, string $destination): bool
+    {
+        return $this->s3Service
+            ->commands()
+            ->upload($destination, $tempPath)
+            ->execute();
+    }
+
+    /**
+     * @param StorageObject $storageObject
+     * @return string
+     */
+    protected function buildFileDestination(StorageObject $storageObject): string
+    {
+        return $storageObject->getRelativePath() . DIRECTORY_SEPARATOR . $storageObject->getFileName();
+    }
+
+    /**
+     * @param string $hash
+     * @return bool
+     */
+    protected function removeFromStorage(string $hash): bool
+    {
+        return $this->s3Service
+            ->commands()
+            ->delete(HashHelper::decode($hash))
+            ->execute();
+    }
+
+    protected function buildPublicUrl(string $hash): string
     {
         return $this->s3Service
             ->commands()

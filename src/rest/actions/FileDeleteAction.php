@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\rest\actions;
 
+use reactivestudio\filestorage\exceptions\FileServiceException;
 use reactivestudio\filestorage\exceptions\FileStrategyException;
-use reactivestudio\filestorage\exceptions\FileTypeServiceException;
 use reactivestudio\filestorage\services\FileService;
 use reactivestudio\filestorage\models\base\AbstractFile;
 use yii\rest\Controller;
@@ -53,7 +53,7 @@ class FileDeleteAction extends DeleteAction
 
         try {
             $this->fileService->removeFromStorage($model);
-        } catch (FileStrategyException | FileTypeServiceException $e) {
+        } catch (FileServiceException | FileStrategyException $e) {
             throw new ServerErrorHttpException(
                 "Failed to delete the object. Error: {$e->getMessage()}",
                 0,

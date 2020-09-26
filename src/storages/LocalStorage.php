@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages;
 
+use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
-use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\Url;
@@ -19,7 +19,7 @@ class LocalStorage extends AbstractStorage
     /**
      * Название директории временного хранения и обработки файлов.
      */
-    private const FILES_DIR = 'files';
+    private const CONTAINERS_DIR = 'containers';
 
     /**
      * @var string|null
@@ -48,7 +48,7 @@ class LocalStorage extends AbstractStorage
     {
         return ArrayHelper::merge(
             parent::getStorageDirs(),
-            [static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::FILES_DIR]
+            [static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::CONTAINERS_DIR]
         );
     }
 
@@ -67,81 +67,87 @@ class LocalStorage extends AbstractStorage
     }
 
     /**
-     * @param StorageFileInfo $storageFileInfo
-     * @throws StorageException in case problem with putting file to storage
-     */
-    public function put(StorageFileInfo $storageFileInfo): void
-    {
-        $destination = $this->getFilesDir() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getFileName();
-        $destination = FileHelper::normalizePath(Yii::getAlias($destination));
-
-        if (null !== $this->fileMode && !chmod($destination, $this->fileMode)) {
-            throw new StorageException("Cannot change file mode 'chmod' to {$this->fileMode}");
-        }
-
-        StorageHelper::copy($storageFileInfo->getTempAbsolutePath(), $destination);
-
-        $hash = HashHelper::encode($storageFileInfo->getRelativePath(), $storageFileInfo->getFileName());
-        $storageFileInfo->setPublicUrl($this->getPublicUrl($hash));
-    }
-
-    /**
-     * @param string $hash
-     * @throws StorageException
-     */
-    public function remove(string $hash): void
-    {
-        if (!$this->isExists($hash)) {
-            return;
-        }
-
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
-        $path = FileHelper::normalizePath(Yii::getAlias($path));
-
-        StorageHelper::deleteFile($path);
-    }
-
-    /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageObject
      * @throws StorageException in case problem with coping file to temp
      */
-    public function copyToTemp(StorageFileInfo $storageFileInfo): void
+    public function copyToTemp(StorageObject $storageObject): void
     {
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getFileName();
+        $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getFileName();
         $path = FileHelper::normalizePath(Yii::getAlias($path));
 
-        $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
+        $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageObject->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
 
         StorageHelper::copy($path, $destination);
-        $storageFileInfo->setTempAbsolutePath($destination);
+        $storageObject->setTempAbsolutePath($destination);
     }
 
     /**
+     * @param string $tempPath
+     * @param string $destination
+     * @return bool
+     */
+    protected function copyToStorage(string $tempPath, string $destination): bool
+    {
+        try {
+            StorageHelper::copy($tempPath, $destination);
+        } catch (StorageException $e) {
+            Yii::warning($e->getMessage());
+            return false;
+        }
+
+        if (null !== $this->fileMode && !chmod($destination, $this->fileMode)) {
+            Yii::warning("Cannot change file mode 'chmod' to {$this->fileMode}");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param StorageObject $storageObject
      * @return string
      */
-    private function getFilesDir(): string
+    protected function buildFileDestination(StorageObject $storageObject): string
     {
-        return $this->webFilesDir . DIRECTORY_SEPARATOR . static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::FILES_DIR;
+        $destination = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getFileName();
+
+        return FileHelper::normalizePath(Yii::getAlias($destination));
+    }
+
+    protected function removeFromStorage(string $hash): bool
+    {
+        $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
+        $path = FileHelper::normalizePath(Yii::getAlias($path));
+
+        return StorageHelper::deleteFile($path);
     }
 
     /**
      * @param string $hash
      * @return string
      */
-    protected function getPublicUrl(string $hash): string
+    protected function buildPublicUrl(string $hash): string
     {
         $path = static::STORAGE_DIR . DIRECTORY_SEPARATOR
-            . static::FILES_DIR . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
+            . static::CONTAINERS_DIR . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
 
         $path = str_replace('\\', '/', $path);
 
         return null !== $this->baseUrl
             ? Url::to($this->baseUrl . '/' . $path, true)
             : Url::base(true) . $path;
+    }
+
+    /**
+     * @return string
+     */
+    private function getContainerAbsolutePath(): string
+    {
+        return $this->webFilesDir . DIRECTORY_SEPARATOR . static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::CONTAINERS_DIR;
     }
 }

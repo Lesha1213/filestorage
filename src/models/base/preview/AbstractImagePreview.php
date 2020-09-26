@@ -23,6 +23,7 @@ use yii\db\ActiveRecord;
  * @property int $storage_status Storage image preview status
  * @property string $name Image preview name
  * @property string $hash Image Preview relative path and filename hash
+ * @property string $preview_config Image Preview config as string
  * @property string $system_name System image preview name, including extension
  * @property int $size Image preview size in bytes
  * @property string|null $public_url Public URL for image preview download
@@ -79,6 +80,7 @@ abstract class AbstractImagePreview extends ActiveRecord implements PreviewInter
                     'storage_status',
                     'name',
                     'hash',
+                    'preview_config',
                     'system_name',
                     'size',
                 ],
@@ -87,7 +89,8 @@ abstract class AbstractImagePreview extends ActiveRecord implements PreviewInter
             [['original_file_id', 'storage_status', 'size', 'created_at', 'updated_at'], 'integer'],
             [['storage_status'], 'in', 'range' => StorageInterface::STATUSES],
             [['storage_status'], 'default', 'value' => StorageInterface::STATUS_NOT_IN_STORAGE],
-            [['storage_name', 'name', 'hash', 'system_name'], 'string', 'max' => 255],
+            [['storage_name', 'name', 'system_name'], 'string', 'max' => 255],
+            [['hash', 'preview_config'], 'string', 'max' => 1024],
             [['name'], 'in', 'range' => static::getPossibleNames()],
             [['name'], 'unique', 'targetAttribute' => ['original_file_id', 'name']],
             [
@@ -137,6 +140,7 @@ abstract class AbstractImagePreview extends ActiveRecord implements PreviewInter
             'storage_status' => 'Storage image preview status',
             'name' => 'Image preview name',
             'hash' => 'Image Preview relative path and filename hash',
+            'preview_config' => 'Image Preview config as string',
             'system_name' => 'System image preview name, including extension',
             'size' => 'Image preview size in bytes',
             'public_url' => 'Public URL for image preview download',

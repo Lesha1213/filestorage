@@ -10,7 +10,7 @@ use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\base\AbstractFile;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use Throwable;
 use yii\db\StaleObjectException;
 use yii\helpers\VarDumper;
@@ -31,14 +31,17 @@ abstract class AbstractStrategy implements FileStrategyInterface
      * @param AbstractFile $file
      * @param string $tempFilePath
      *
-     * @throws StorageException
      * @throws FileStrategyException
      */
     public function put(AbstractFile $file, string $tempFilePath): void
     {
         $storageFileInfo = $this->createFileStorageInfo($file, $tempFilePath);
 
-        $this->storage->put($storageFileInfo);
+        try {
+            $this->storage->put($storageFileInfo);
+        } catch (StorageException $e) {
+            throw new FileStrategyException("Strategy put error: {$e->getMessage()}", 0, $e);
+        }
         $this->storage->removeFromTemp($storageFileInfo);
 
         $this->fillEntityAfterPut($file, $storageFileInfo);
@@ -56,18 +59,20 @@ abstract class AbstractStrategy implements FileStrategyInterface
         try {
             $file->delete();
         } catch (StaleObjectException | Throwable $e) {
-            throw new FileStrategyException("Cannot delete entity. Error: {$e->getMessage()}", 0, $e);
+            throw new FileStrategyException(
+                "Cannot delete file entity. Error: {$e->getMessage()}", 0, $e
+            );
         }
     }
 
     /**
      * @param AbstractFile $file
      * @param string $tempFilePath
-     * @return StorageFileInfo
+     * @return StorageObject
      */
-    protected function createFileStorageInfo(AbstractFile $file, string $tempFilePath): StorageFileInfo
+    protected function createFileStorageInfo(AbstractFile $file, string $tempFilePath): StorageObject
     {
-        return (new StorageFileInfo())
+        return (new StorageObject())
             ->setRelativePath($file->getRelativePath())
             ->setFileName($file->system_name)
             ->setTempAbsolutePath($tempFilePath)
@@ -76,9 +81,9 @@ abstract class AbstractStrategy implements FileStrategyInterface
 
     /**
      * @param AbstractFile $file
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageFileInfo
      */
-    protected function fillEntityAfterPut(AbstractFile $file, StorageFileInfo $storageFileInfo): void
+    protected function fillEntityAfterPut(AbstractFile $file, StorageObject $storageFileInfo): void
     {
         $file->storage_name = $this->storage->getName();
         $file->storage_status = $this->storage::STATUS_IN_STORAGE;

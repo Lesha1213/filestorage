@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\uploaders\base;
 
-use Exception;
 use reactivestudio\filestorage\exceptions\FileServiceException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\services\FileService;
-use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\UploaderException;
 use reactivestudio\filestorage\interfaces\UploaderInterface;
 use reactivestudio\filestorage\models\base\AbstractFile;
@@ -81,7 +79,7 @@ abstract class AbstractUploader implements UploaderInterface
 
         try {
             $this->fileService->putToStorage($entity, $form->uploadFile->tempName);
-        } catch (FileServiceException | FileStrategyException | Exception $e) {
+        } catch (FileServiceException $e) {
             throw new UploaderException("Put to storage error: {$e->getMessage()}", 0, $e);
         }
 
