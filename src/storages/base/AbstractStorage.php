@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages\base;
 
+use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\exceptions\StorageException;
-use reactivestudio\filestorage\exceptions\StorageObjectIsNotFoundException;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
-use reactivestudio\filestorage\interfaces\StorageInterface;
-use reactivestudio\filestorage\storages\dto\StorageObject;
-use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use yii\helpers\FileHelper;
 
 abstract class AbstractStorage implements StorageInterface
@@ -84,12 +82,12 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * @param string $hash
      * @return StorageObject
-     * @throws StorageObjectIsNotFoundException
+     * @throws StorageException
      */
     public function take(string $hash): StorageObject
     {
         if (!$this->isExists($hash)) {
-            throw new StorageObjectIsNotFoundException("Storage object is not found with hash: {$hash}");
+            throw new StorageException("Storage object is not found with hash: {$hash}");
         }
 
         $path = HashHelper::decode($hash);
@@ -104,7 +102,6 @@ abstract class AbstractStorage implements StorageInterface
 
     /**
      * @param StorageObject $storageObject
-     * @throws StorageObjectIsAlreadyExistsException
      * @throws StorageException
      */
     public function put(StorageObject $storageObject): void
@@ -115,7 +112,7 @@ abstract class AbstractStorage implements StorageInterface
             if ($storageObject->isForceMode()) {
                 $this->remove($hash);
             } else {
-                throw new StorageObjectIsAlreadyExistsException(
+                throw new StorageException(
                     "Storage object is already exists with hash: {$hash}"
                 );
             }

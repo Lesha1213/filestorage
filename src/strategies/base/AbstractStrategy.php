@@ -6,7 +6,6 @@ namespace reactivestudio\filestorage\strategies\base;
 
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\StorageException;
-use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
@@ -33,14 +32,16 @@ abstract class AbstractStrategy implements FileStrategyInterface
      * @param string $tempFilePath
      *
      * @throws FileStrategyException
-     * @throws StorageException
-     * @throws StorageObjectIsAlreadyExistsException
      */
     public function put(AbstractFile $file, string $tempFilePath): void
     {
         $storageFileInfo = $this->createFileStorageInfo($file, $tempFilePath);
 
-        $this->storage->put($storageFileInfo);
+        try {
+            $this->storage->put($storageFileInfo);
+        } catch (StorageException $e) {
+            throw new FileStrategyException("Strategy put error: {$e->getMessage()}", 0, $e);
+        }
         $this->storage->removeFromTemp($storageFileInfo);
 
         $this->fillEntityAfterPut($file, $storageFileInfo);
@@ -58,7 +59,9 @@ abstract class AbstractStrategy implements FileStrategyInterface
         try {
             $file->delete();
         } catch (StaleObjectException | Throwable $e) {
-            throw new FileStrategyException("Cannot delete entity. Error: {$e->getMessage()}", 0, $e);
+            throw new FileStrategyException(
+                "Cannot delete file entity. Error: {$e->getMessage()}", 0, $e
+            );
         }
     }
 

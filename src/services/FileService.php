@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\services;
 
-use Exception;
 use reactivestudio\filestorage\exceptions\FileServiceException;
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\FileTypeServiceException;
 use reactivestudio\filestorage\exceptions\StorageException;
-use reactivestudio\filestorage\exceptions\StorageObjectIsNotFoundException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
@@ -67,12 +65,15 @@ class FileService
     /**
      * @param AbstractFile $file
      * @return StorageObject
-     * @throws StorageException
-     * @throws StorageObjectIsNotFoundException
+     * @throws FileServiceException
      */
     public function takeFromStorage(AbstractFile $file): StorageObject
     {
-        return $this->storage->take(HashHelper::encode($file->getRelativePath(), $file->system_name));
+        try {
+            return $this->storage->take(HashHelper::encode($file->getRelativePath(), $file->system_name));
+        } catch (StorageException $e) {
+            throw new FileServiceException("Error take file from storage: {$e->getMessage()}", 0, $e);
+        }
     }
 
     /**
@@ -80,9 +81,7 @@ class FileService
      * @param string $tempFilePath
      * @param bool $isForceMode
      *
-     * @throws FileStrategyException
      * @throws FileServiceException
-     * @throws Exception
      */
     public function putToStorage(AbstractFile $file, string $tempFilePath, bool $isForceMode = true): void
     {
@@ -91,13 +90,17 @@ class FileService
             throw new FileServiceException("File is already exists in storage with hash: {$hash}");
         }
 
-        $this->getStrategy($file)->put($file, $tempFilePath);
+        try {
+            $this->getStrategy($file)->put($file, $tempFilePath);
+        } catch (FileStrategyException $e) {
+            throw new FileServiceException("Error put file to storage: {$e->getMessage()}", 0, $e);
+        }
     }
 
     /**
      * @param AbstractFile $file
      * @throws FileStrategyException
-     * @throws FileTypeServiceException
+     * @throws FileServiceException
      */
     public function removeFromStorage(AbstractFile $file): void
     {
@@ -121,11 +124,15 @@ class FileService
     /**
      * @param AbstractFile $file
      * @return FileStrategyInterface
-     * @throws FileTypeServiceException
+     * @throws FileServiceException
      */
     private function getStrategy(AbstractFile $file): FileStrategyInterface
     {
         $type = $this->fileTypeService->getType($file->mime);
-        return $this->fileTypeService->getStrategy($type);
+        try {
+            return $this->fileTypeService->getStrategy($type);
+        } catch (FileTypeServiceException $e) {
+            throw new FileServiceException("Cannot get file strategy: {$e->getMessage()}", 0, $e);
+        }
     }
 }

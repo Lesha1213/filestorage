@@ -10,5 +10,5 @@ interface OperationInterface
 {
     public function build(): OperationInterface;
     public function apply(Image $image): void;
-    public function getSystemName(): string;
+    public function getConfig(): string;
 }

@@ -7,13 +7,11 @@ namespace reactivestudio\filestorage\strategies;
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
 use reactivestudio\filestorage\exceptions\StorageException;
-use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\base\AbstractFile;
 use reactivestudio\filestorage\models\base\AbstractImage;
 use reactivestudio\filestorage\services\image\ImagePreviewService;
 use reactivestudio\filestorage\strategies\base\AbstractStrategy;
-use yii\base\InvalidConfigException;
 
 class ImageStrategy extends AbstractStrategy
 {
@@ -36,10 +34,6 @@ class ImageStrategy extends AbstractStrategy
      * @param string $tempFilePath
      *
      * @throws FileStrategyException
-     * @throws StorageObjectIsAlreadyExistsException
-     * @throws ImagePreviewServiceException
-     * @throws StorageException
-     * @throws InvalidConfigException
      */
     public function put(AbstractFile $file, string $tempFilePath): void
     {
@@ -47,12 +41,20 @@ class ImageStrategy extends AbstractStrategy
         $image = $file;
         $storageFileInfo = $this->createFileStorageInfo($file, $tempFilePath);
 
-        $this->storage->put($storageFileInfo);
+        try {
+            $this->storage->put($storageFileInfo);
+        } catch (StorageException $e) {
+            throw new FileStrategyException("Strategy put error: {$e->getMessage()}", 0, $e);
+        }
 
         $this->fillEntityAfterPut($image, $storageFileInfo);
         $this->saveEntity($image);
 
-        $this->imagePreviewService->createPreviews($image);
+        try {
+            $this->imagePreviewService->createPreviews($image);
+        } catch (ImagePreviewServiceException $e) {
+            throw new FileStrategyException("Strategy put error: {$e->getMessage()}", 0, $e);
+        }
 
         $this->storage->removeFromTemp($storageFileInfo);
     }
@@ -62,7 +64,12 @@ class ImageStrategy extends AbstractStrategy
         /** @var AbstractImage $image */
         $image = $file;
 
-        $this->imagePreviewService->clearPreviews($image);
+        try {
+            $this->imagePreviewService->clearPreviews($image);
+        } catch (ImagePreviewServiceException $e) {
+            throw new FileStrategyException("Strategy remove error: {$e->getMessage()}", 0, $e);
+        }
+
         parent::remove($image);
     }
 }

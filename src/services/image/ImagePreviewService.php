@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace reactivestudio\filestorage\services\image;
 
 use Exception;
-use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
-use reactivestudio\filestorage\exceptions\StorageException;
-use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
-use reactivestudio\filestorage\exceptions\StorageObjectIsNotFoundException;
-use reactivestudio\filestorage\helpers\HashHelper;
-use reactivestudio\filestorage\interfaces\StorageInterface;
-use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
-use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\interfaces\OperationInterface;
+use reactivestudio\filestorage\interfaces\StorageInterface;
+use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\ImagePreviewServiceException;
 use reactivestudio\filestorage\models\base\AbstractImage;
 use reactivestudio\filestorage\models\base\preview\AbstractImagePreview;
+use reactivestudio\filestorage\services\image\dto\PreviewBuildObject;
 use reactivestudio\filestorage\storages\dto\StorageObject;
+use reactivestudio\filestorage\helpers\StorageHelper;
+use reactivestudio\filestorage\helpers\HashHelper;
+use Throwable;
 use yii\base\InvalidConfigException;
+use yii\db\ActiveQuery;
+use yii\db\StaleObjectException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use Yii;
@@ -70,15 +71,26 @@ class ImagePreviewService
 
     /**
      * @param AbstractImage $image
+     * @param string|null $previewName
+     *
+     * @return ActiveQuery
+     */
+    public function getRelationQuery(AbstractImage $image, ?string $previewName = null): ActiveQuery
+    {
+        return null !== $previewName
+            ? $image
+                ->hasOne($image::getPreviewEntityClass(), ['original_file_id' => 'id'])
+                ->onCondition(['name' => $previewName])
+            : $image->hasMany($image::getPreviewEntityClass(), ['original_file_id' => 'id'])
+                ->orderBy(['name' => SORT_ASC]);
+    }
+
+    /**
+     * @param AbstractImage $image
      * @param string $previewName
      *
      * @return AbstractImagePreview
-     *
      * @throws ImagePreviewServiceException
-     * @throws InvalidConfigException
-     * @throws StorageException
-     * @throws StorageObjectIsAlreadyExistsException
-     * @throws StorageObjectIsNotFoundException
      */
     public function getPreview(AbstractImage $image, string $previewName): AbstractImagePreview
     {
@@ -87,7 +99,7 @@ class ImagePreviewService
         if (
             null === $preview
             || !$this->isPreviewInStorage($preview)
-            || !$this->isPreviewActual($image, $preview)
+            || $this->isPreviewActual($image, $preview)
         ) {
             $preview = $this->createPreview($image, $previewName);
         }
@@ -97,77 +109,35 @@ class ImagePreviewService
 
     /**
      * @param AbstractImage $image
-     * @param string $previewName
-     *
      * @throws ImagePreviewServiceException
-     * @throws InvalidConfigException
-     * @throws StorageException
-     * @throws StorageObjectIsAlreadyExistsException
-     * @throws StorageObjectIsNotFoundException
-     */
-    public function reCreatePreview(AbstractImage $image, string $previewName): void
-    {
-        $preview = $this->getPreview($image, $previewName);
-        $this->clearPreview($preview);
-        $this->createPreview($image, $previewName);
-    }
-
-    /**
-     * @param AbstractImage $image
-     *
-     * @throws ImagePreviewServiceException
-     * @throws InvalidConfigException
-     * @throws StorageException
-     * @throws StorageObjectIsAlreadyExistsException
-     * @throws StorageObjectIsNotFoundException
      */
     public function createPreviews(AbstractImage $image): void
     {
-        $storageFileInfo = $this->storage->take($image->hash);
-        $this->storage->copyToTemp($storageFileInfo);
+        try {
+            $storageObject = $this->storage->take($image->hash);
+        } catch (StorageException $e) {
+            throw new ImagePreviewServiceException("Error creating preview: {$e->getMessage()}", 0, $e);
+        }
+        $this->storage->copyToTemp($storageObject);
 
-        $interventionImage = $this->imageManager->make($storageFileInfo->getTempAbsolutePath());
+        $interventionImage = $this->imageManager->make($storageObject->getTempAbsolutePath());
 
         foreach ($image::getPreviewEntityClass()::getPossibleNames() as $previewName) {
-            $this->buildPreview($image, $previewName, $interventionImage, $storageFileInfo->getTempAbsolutePath());
+            $buildObject = (new PreviewBuildObject())
+                ->setOriginalImage($image)
+                ->setOriginalTempAbsolutePath($storageObject->getTempAbsolutePath())
+                ->setPreviewName($previewName)
+                ->setInterventionImage($interventionImage);
+
+            $this->buildPreview($buildObject);
         }
 
-        $this->storage->removeFromTemp($storageFileInfo);
+        $this->storage->removeFromTemp($storageObject);
     }
 
     /**
      * @param AbstractImage $image
-     * @param string $previewName
-     *
-     * @return AbstractImagePreview
-     *
      * @throws ImagePreviewServiceException
-     * @throws InvalidConfigException
-     * @throws StorageException
-     * @throws StorageObjectIsAlreadyExistsException
-     * @throws StorageObjectIsNotFoundException
-     */
-    public function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
-    {
-        $storageFileInfo = $this->storage->take($image->hash);
-        $this->storage->copyToTemp($storageFileInfo);
-
-        $interventionImage = $this->imageManager->make($storageFileInfo->getTempAbsolutePath());
-
-        $preview = $this->buildPreview(
-            $image,
-            $previewName,
-            $interventionImage,
-            $storageFileInfo->getTempAbsolutePath()
-        );
-
-        $this->storage->removeFromTemp($storageFileInfo);
-
-        return $preview;
-    }
-
-    /**
-     * @param AbstractImage $image
      */
     public function clearPreviews(AbstractImage $image): void
     {
@@ -178,10 +148,19 @@ class ImagePreviewService
 
     /**
      * @param AbstractImagePreview $preview
+     * @throws ImagePreviewServiceException
      */
     public function clearPreview(AbstractImagePreview $preview): void
     {
-        if (!$this->storage->isExists($preview->hash)) {
+        if (!$this->isPreviewInStorage($preview)) {
+            try {
+                $preview->delete();
+            } catch (StaleObjectException | Throwable $e) {
+                throw new ImagePreviewServiceException(
+                    "Error with removing image preview entity: {$e->getMessage()}"
+                );
+            }
+
             return;
         }
 
@@ -211,9 +190,7 @@ class ImagePreviewService
             return false;
         }
 
-        $actualPreviewFileName = $this->getPreviewFileName($operation, $preview->name, $image->original_extension);
-
-        return $preview->system_name === $actualPreviewFileName;
+        return $preview->preview_config === $operation->getConfig();
     }
 
     /**
@@ -239,75 +216,106 @@ class ImagePreviewService
     /**
      * @param AbstractImage $image
      * @param string $previewName
-     * @param Image $interventionImage
-     * @param string $originalTempAbsolutePath
      *
      * @return AbstractImagePreview
-     *
      * @throws ImagePreviewServiceException
-     * @throws InvalidConfigException
-     * @throws StorageException
-     * @throws StorageObjectIsAlreadyExistsException
      */
-    private function buildPreview(
-        AbstractImage $image,
-        string $previewName,
-        Image $interventionImage,
-        string $originalTempAbsolutePath
-    ): AbstractImagePreview {
-        $operation = $this::getOperation($image, $previewName);
-        $operation->apply($interventionImage);
+    private function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
+    {
+        try {
+            $storageObject = $this->storage->take($image->hash);
+        } catch (StorageException $e) {
+            throw new ImagePreviewServiceException("Error creating preview: {$e->getMessage()}", 0, $e);
+        }
 
-        $previewTempAbsolutePath = $this->getPreviewTempPath(
-            $originalTempAbsolutePath,
-            $this->getPreviewFileName($operation, $previewName, $image->original_extension)
-        );
+        $this->storage->copyToTemp($storageObject);
 
-        $interventionImage->save($previewTempAbsolutePath, 100);
-        $size = (int)filesize($previewTempAbsolutePath);
+        $buildObject = (new PreviewBuildObject())
+            ->setOriginalImage($image)
+            ->setOriginalTempAbsolutePath($storageObject->getTempAbsolutePath())
+            ->setPreviewName($previewName)
+            ->setInterventionImage($this->imageManager->make($storageObject->getTempAbsolutePath()));
 
-        $storagePreviewInfo = (new StorageObject())
-            ->setTempAbsolutePath($previewTempAbsolutePath)
-            ->setRelativePath($this->getPreviewRelativePath($image))
-            ->setFileName($this->getPreviewFileName($operation, $previewName, $image->original_extension));
+        $oldPreview = $this->findPreview($image, $previewName);
+        if (null !== $oldPreview) {
+            $this->clearPreview($oldPreview);
+        }
 
-        $this->storage->put($storagePreviewInfo);
-        $this->storage->removeFromTemp($storagePreviewInfo);
+        $preview = $this->buildPreview($buildObject);
+        $this->storage->removeFromTemp($storageObject);
 
-        return $this->createPreviewEntity($image, $previewName, $storagePreviewInfo, $size);
+        return $preview;
     }
 
     /**
-     * @param AbstractImage $image
-     * @param string $previewName
-     * @param StorageObject $storagePreviewInfo
-     * @param int $size
-     *
+     * @param PreviewBuildObject $buildObject
      * @return AbstractImagePreview
-     *
-     * @throws InvalidConfigException
      * @throws ImagePreviewServiceException
      */
-    private function createPreviewEntity(
-        AbstractImage $image,
-        string $previewName,
-        StorageObject $storagePreviewInfo,
-        int $size
-    ): AbstractImagePreview {
-        /** @var AbstractImagePreview $entity */
-        $entity = Yii::createObject($image::getPreviewEntityClass());
+    private function buildPreview(PreviewBuildObject $buildObject): AbstractImagePreview
+    {
+        $buildObject->setOperation(
+            $this::getOperation($buildObject->getOriginalImage(), $buildObject->getPreviewName())
+        );
 
-        $entity->original_file_id = $image->id;
+        $buildObject->getOperation()->apply($buildObject->getInterventionImage());
+
+        $previewFileName = uniqid('', true) . '.'
+            . $buildObject->getOriginalImage()->original_extension;
+
+        $previewTempAbsolutePath = $this->getPreviewTempPath(
+            $buildObject->getOriginalTempAbsolutePath(),
+            $previewFileName
+        );
+
+        $buildObject->getInterventionImage()->save($previewTempAbsolutePath, 100);
+        $buildObject->setSize((int)filesize($previewTempAbsolutePath));
+
+        $storageObject = (new StorageObject())
+            ->setTempAbsolutePath($previewTempAbsolutePath)
+            ->setRelativePath($this->getPreviewRelativePath($buildObject->getOriginalImage()))
+            ->setFileName($previewFileName);
+
+        $buildObject->setStorageObject($storageObject);
+
+        try {
+            $this->storage->put($storageObject);
+        } catch (StorageException $e) {
+            throw new ImagePreviewServiceException("Error building preview: {$e->getMessage()}", 0, $e);
+        }
+        $this->storage->removeFromTemp($storageObject);
+
+        return $this->createPreviewEntity($buildObject);
+    }
+
+    /**
+     * @param PreviewBuildObject $buildObject
+     * @return AbstractImagePreview
+     * @throws ImagePreviewServiceException
+     */
+    private function createPreviewEntity(PreviewBuildObject $buildObject): AbstractImagePreview
+    {
+        try {
+            /** @var AbstractImagePreview $entity */
+            $entity = Yii::createObject($buildObject->getOriginalImage()::getPreviewEntityClass());
+        } catch (InvalidConfigException $e) {
+            throw new ImagePreviewServiceException(
+                "Error creating preview entity: {$e->getMessage()}", 0, $e
+            );
+        }
+
+        $entity->original_file_id = $buildObject->getOriginalImage()->id;
         $entity->storage_name = $this->storage->getName();
         $entity->storage_status = $this->storage::STATUS_IN_STORAGE;
-        $entity->name = $previewName;
+        $entity->name = $buildObject->getPreviewName();
         $entity->hash = HashHelper::encode(
-            $this->getPreviewRelativePath($image),
-            $storagePreviewInfo->getFileName()
+            $this->getPreviewRelativePath($buildObject->getOriginalImage()),
+            $buildObject->getStorageObject()->getFileName()
         );
-        $entity->system_name = $storagePreviewInfo->getFileName();
-        $entity->size = $size;
-        $entity->public_url = $storagePreviewInfo->getPublicUrl();
+        $entity->preview_config = $buildObject->getOperation()->getConfig();
+        $entity->system_name = $buildObject->getStorageObject()->getFileName();
+        $entity->size = $buildObject->getSize();
+        $entity->public_url = $buildObject->getStorageObject()->getPublicUrl();
 
         if (!$entity->validate()) {
             throw new ImagePreviewServiceException(
@@ -326,11 +334,6 @@ class ImagePreviewService
     private function getPreviewRelativePath(AbstractImage $image): string
     {
         return $image->getRelativePath() . DIRECTORY_SEPARATOR . static::PREVIEWS_DIR;
-    }
-
-    private function getPreviewFileName(OperationInterface $operation, string $previewName, string $extension): string
-    {
-        return $previewName . '_' . $operation->getSystemName() . '.' . $extension;
     }
 
     private function getPreviewTempPath(string $originalTempPath, string $previewFileName): string
