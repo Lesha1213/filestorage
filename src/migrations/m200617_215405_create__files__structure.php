@@ -60,7 +60,7 @@ class m200617_215405_create__files__structure extends Migration
                     ->null()
                     ->comment('Related entity identifier'),
                 'hash' => $this
-                    ->string(1024)
+                    ->string(512)
                     ->notNull()
                     ->comment('File relative path and filename hash'),
                 'original_name' => $this
