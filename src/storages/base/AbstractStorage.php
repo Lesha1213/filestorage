@@ -156,7 +156,11 @@ abstract class AbstractStorage implements StorageInterface
      */
     public function removeFromTemp(StorageObject $storageObject): void
     {
-        StorageHelper::deleteFile($storageObject->getTempAbsolutePath());
+        if (!StorageHelper::deleteFile($storageObject->getTempAbsolutePath())) {
+            throw new StorageException(
+                "Cannot remove file from temp with path: {$storageObject->getTempAbsolutePath()}"
+            );
+        }
     }
 
     /**

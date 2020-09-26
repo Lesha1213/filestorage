@@ -124,14 +124,7 @@ class LocalStorage extends AbstractStorage
         $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
         $path = FileHelper::normalizePath(Yii::getAlias($path));
 
-        try {
-            StorageHelper::deleteFile($path);
-        } catch (StorageException $e) {
-            Yii::warning($e->getMessage());
-            return false;
-        }
-
-        return true;
+        return StorageHelper::deleteFile($path);
     }
 
     /**
