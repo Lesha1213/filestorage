@@ -51,14 +51,14 @@ abstract class AbstractStorage implements StorageInterface
      */
     abstract public function isExists(string $hash): bool;
 
-    abstract public function copyFromStorageToTemp(StorageObject $storageObject): void;
+    abstract public function copyToTemp(StorageObject $storageObject): void;
 
     /**
      * @param string $tempPath
      * @param string $destination
      * @return bool
      */
-    abstract protected function copyFromTempToStorage(string $tempPath, string $destination): bool;
+    abstract protected function copyToStorage(string $tempPath, string $destination): bool;
 
     /**
      * @param StorageObject $storageObject
@@ -122,7 +122,7 @@ abstract class AbstractStorage implements StorageInterface
         }
 
         $destination = $this->buildFileDestination($storageObject);
-        $isCopied = $this->copyFromTempToStorage($storageObject->getTempAbsolutePath(), $destination);
+        $isCopied = $this->copyToStorage($storageObject->getTempAbsolutePath(), $destination);
 
         if (!$isCopied) {
             throw new StorageException(

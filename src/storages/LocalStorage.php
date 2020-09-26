@@ -70,7 +70,7 @@ class LocalStorage extends AbstractStorage
      * @param StorageObject $storageObject
      * @throws StorageException in case problem with coping file to temp
      */
-    public function copyFromStorageToTemp(StorageObject $storageObject): void
+    public function copyToTemp(StorageObject $storageObject): void
     {
         $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
             . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
@@ -89,7 +89,7 @@ class LocalStorage extends AbstractStorage
      * @param string $destination
      * @return bool
      */
-    protected function copyFromTempToStorage(string $tempPath, string $destination): bool
+    protected function copyToStorage(string $tempPath, string $destination): bool
     {
         try {
             StorageHelper::copy($tempPath, $destination);

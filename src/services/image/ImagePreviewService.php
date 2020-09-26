@@ -120,7 +120,7 @@ class ImagePreviewService
     public function createPreviews(AbstractImage $image): void
     {
         $storageFileInfo = $this->storage->take($image->hash);
-        $this->storage->copyFromStorageToTemp($storageFileInfo);
+        $this->storage->copyToTemp($storageFileInfo);
 
         $interventionImage = $this->imageManager->make($storageFileInfo->getTempAbsolutePath());
 
@@ -145,7 +145,7 @@ class ImagePreviewService
     public function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
     {
         $storageFileInfo = $this->storage->take($image->hash);
-        $this->storage->copyFromStorageToTemp($storageFileInfo);
+        $this->storage->copyToTemp($storageFileInfo);
 
         $interventionImage = $this->imageManager->make($storageFileInfo->getTempAbsolutePath());
 

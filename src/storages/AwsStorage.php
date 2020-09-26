@@ -52,7 +52,7 @@ class AwsStorage extends AbstractStorage
      * @param StorageObject $storageObject
      * @throws StorageException
      */
-    public function copyFromStorageToTemp(StorageObject $storageObject): void
+    public function copyToTemp(StorageObject $storageObject): void
     {
         $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageObject->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
@@ -70,7 +70,7 @@ class AwsStorage extends AbstractStorage
      * @param string $destination
      * @return bool
      */
-    protected function copyFromTempToStorage(string $tempPath, string $destination): bool
+    protected function copyToStorage(string $tempPath, string $destination): bool
     {
         return $this->s3Service
             ->commands()

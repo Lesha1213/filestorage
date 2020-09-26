@@ -45,7 +45,7 @@ interface StorageInterface
 
     public function remove(string $hash): void;
 
-    public function copyFromStorageToTemp(StorageObject $storageObject): void;
+    public function copyToTemp(StorageObject $storageObject): void;
 
     public function removeFromTemp(StorageObject $storageObject): void;
 }
