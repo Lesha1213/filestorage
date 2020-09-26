@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace reactivestudio\filestorage\interfaces;
 
 use reactivestudio\filestorage\exceptions\StorageException;
+use reactivestudio\filestorage\exceptions\StorageObjectIsNotFoundException;
 use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\exceptions\StorageObjectIsAlreadyExistsException;
 
@@ -33,6 +34,7 @@ interface StorageInterface
      * @param string $hash
      * @return StorageObject
      * @throws StorageException in case storage object is not found
+     * @throws StorageObjectIsNotFoundException
      */
     public function take(string $hash): StorageObject;
 
