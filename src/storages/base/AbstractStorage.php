@@ -78,7 +78,7 @@ abstract class AbstractStorage implements StorageInterface
     /**
      * @param string $hash
      * @return StorageObject
-     * @throws StorageException
+     * @throws StorageException in case storage object is not found
      */
     public function take(string $hash): StorageObject
     {
@@ -93,7 +93,7 @@ abstract class AbstractStorage implements StorageInterface
             ->setRelativePath(StorageHelper::getDirName($path))
             ->setFileName(StorageHelper::getFileName($path))
             ->setPublicUrl($this->getPublicUrl($hash))
-            ->setAvailability($this->isExists($hash));
+            ->setAvailability(true);
     }
 
     /**

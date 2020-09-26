@@ -19,7 +19,7 @@ class LocalStorage extends AbstractStorage
     /**
      * Название директории временного хранения и обработки файлов.
      */
-    private const FILES_DIR = 'files';
+    private const CONTAINERS_DIR = 'containers';
 
     /**
      * @var string|null
@@ -48,7 +48,7 @@ class LocalStorage extends AbstractStorage
     {
         return ArrayHelper::merge(
             parent::getStorageDirs(),
-            [static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::FILES_DIR]
+            [static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::CONTAINERS_DIR]
         );
     }
 
@@ -72,7 +72,7 @@ class LocalStorage extends AbstractStorage
      */
     public function put(StorageObject $storageObject): void
     {
-        $destination = $this->getFilesDir() . DIRECTORY_SEPARATOR
+        $destination = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
             . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
             . $storageObject->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
@@ -97,7 +97,7 @@ class LocalStorage extends AbstractStorage
             return;
         }
 
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
+        $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
         $path = FileHelper::normalizePath(Yii::getAlias($path));
 
         StorageHelper::deleteFile($path);
@@ -109,7 +109,7 @@ class LocalStorage extends AbstractStorage
      */
     public function copyToTemp(StorageObject $storageFileInfo): void
     {
-        $path = $this->getFilesDir() . DIRECTORY_SEPARATOR
+        $path = $this->getContainerAbsolutePath() . DIRECTORY_SEPARATOR
             . $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR
             . $storageFileInfo->getFileName();
         $path = FileHelper::normalizePath(Yii::getAlias($path));
@@ -124,9 +124,9 @@ class LocalStorage extends AbstractStorage
     /**
      * @return string
      */
-    private function getFilesDir(): string
+    private function getContainerAbsolutePath(): string
     {
-        return $this->webFilesDir . DIRECTORY_SEPARATOR . static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::FILES_DIR;
+        return $this->webFilesDir . DIRECTORY_SEPARATOR . static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::CONTAINERS_DIR;
     }
 
     /**
@@ -136,7 +136,7 @@ class LocalStorage extends AbstractStorage
     protected function getPublicUrl(string $hash): string
     {
         $path = static::STORAGE_DIR . DIRECTORY_SEPARATOR
-            . static::FILES_DIR . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
+            . static::CONTAINERS_DIR . DIRECTORY_SEPARATOR . HashHelper::decode($hash);
 
         $path = str_replace('\\', '/', $path);
 

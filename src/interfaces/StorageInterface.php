@@ -28,6 +28,11 @@ interface StorageInterface
 
     public function isExists(string $hash): bool;
 
+    /**
+     * @param string $hash
+     * @return StorageObject
+     * @throws StorageException in case storage object is not found
+     */
     public function take(string $hash): StorageObject;
 
     /**
