@@ -7,7 +7,7 @@ namespace reactivestudio\filestorage\storages\base;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\interfaces\StorageInterface;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\exceptions\StorageException;
 use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
@@ -53,14 +53,14 @@ abstract class AbstractStorage implements StorageInterface
     abstract public function isExists(string $hash): bool;
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageObject
      * @throws StorageException
      */
-    abstract public function put(StorageFileInfo $storageFileInfo): void;
+    abstract public function put(StorageObject $storageObject): void;
 
     abstract public function remove(string $hash): void;
 
-    abstract public function copyToTemp(StorageFileInfo $storageFileInfo): void;
+    abstract public function copyToTemp(StorageObject $storageFileInfo): void;
 
     abstract protected function getPublicUrl(string $hash): string;
 
@@ -77,14 +77,19 @@ abstract class AbstractStorage implements StorageInterface
 
     /**
      * @param string $hash
-     * @return StorageFileInfo
+     * @return StorageObject
+     * @throws StorageException
      */
-    public function take(string $hash): StorageFileInfo
+    public function take(string $hash): StorageObject
     {
+        if (!$this->isExists($hash)) {
+            throw new StorageException("Storage object is not found with hash: {$hash}");
+        }
+
         $path = HashHelper::decode($hash);
         $path = FileHelper::normalizePath($path);
 
-        return (new StorageFileInfo())
+        return (new StorageObject())
             ->setRelativePath(StorageHelper::getDirName($path))
             ->setFileName(StorageHelper::getFileName($path))
             ->setPublicUrl($this->getPublicUrl($hash))
@@ -92,10 +97,10 @@ abstract class AbstractStorage implements StorageInterface
     }
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageFileInfo
      * @throws StorageException
      */
-    public function removeFromTemp(StorageFileInfo $storageFileInfo): void
+    public function removeFromTemp(StorageObject $storageFileInfo): void
     {
         StorageHelper::deleteFile($storageFileInfo->getTempAbsolutePath());
     }

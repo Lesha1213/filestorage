@@ -9,7 +9,7 @@ use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use yii\helpers\FileHelper;
 use Yii;
 
@@ -48,10 +48,10 @@ class AwsStorage extends AbstractStorage
             ->execute();
     }
 
-    public function put(StorageFileInfo $storageFileInfo): void
+    public function put(StorageObject $storageObject): void
     {
-        $relatedFilePath = $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
-        $hash = HashHelper::encode($storageFileInfo->getRelativePath(), $storageFileInfo->getFileName());
+        $relatedFilePath = $storageObject->getRelativePath() . DIRECTORY_SEPARATOR . $storageObject->getFileName();
+        $hash = HashHelper::encode($storageObject->getRelativePath(), $storageObject->getFileName());
 
         if ($this->isExists($hash)) {
             $this->remove($hash);
@@ -59,15 +59,17 @@ class AwsStorage extends AbstractStorage
 
         $result = $this->s3Service
             ->commands()
-            ->upload($relatedFilePath, $storageFileInfo->getTempAbsolutePath())
-            ->withCacheControl()
+            ->upload($relatedFilePath, $storageObject->getTempAbsolutePath())
             ->execute();
 
         if (!$result) {
             throw new StorageException(
-                "File put in storage error for temp path: {$storageFileInfo->getTempAbsolutePath()}"
+                "File put in storage error for temp path: {$storageObject->getTempAbsolutePath()}"
             );
         }
+
+        $hash = HashHelper::encode($storageObject->getRelativePath(), $storageObject->getFileName());
+        $storageObject->setPublicUrl($this->getPublicUrl($hash));
     }
 
     /**
@@ -91,10 +93,10 @@ class AwsStorage extends AbstractStorage
     }
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageFileInfo
      * @throws StorageException
      */
-    public function copyToTemp(StorageFileInfo $storageFileInfo): void
+    public function copyToTemp(StorageObject $storageFileInfo): void
     {
         $destination = $this->getTempDir() . DIRECTORY_SEPARATOR . $storageFileInfo->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\storages\dto;
 
-class StorageFileInfo
+class StorageObject
 {
     /**
      * @var string
@@ -17,7 +17,7 @@ class StorageFileInfo
     private $fileName;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $publicUrl;
 
@@ -46,7 +46,7 @@ class StorageFileInfo
 
     /**
      * @param string $relativePath
-     * @return StorageFileInfo
+     * @return StorageObject
      */
     public function setRelativePath(string $relativePath): self
     {
@@ -64,7 +64,7 @@ class StorageFileInfo
 
     /**
      * @param string $fileName
-     * @return StorageFileInfo
+     * @return StorageObject
      */
     public function setFileName(string $fileName): self
     {
@@ -73,16 +73,16 @@ class StorageFileInfo
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getPublicUrl(): string
+    public function getPublicUrl(): ?string
     {
         return $this->publicUrl;
     }
 
     /**
      * @param string $publicUrl
-     * @return StorageFileInfo
+     * @return StorageObject
      */
     public function setPublicUrl(string $publicUrl): self
     {
@@ -100,7 +100,7 @@ class StorageFileInfo
 
     /**
      * @param bool $isAvailable
-     * @return StorageFileInfo
+     * @return StorageObject
      */
     public function setAvailability(bool $isAvailable): self
     {
@@ -118,7 +118,7 @@ class StorageFileInfo
 
     /**
      * @param string $tempAbsolutePath
-     * @return StorageFileInfo
+     * @return StorageObject
      */
     public function setTempAbsolutePath(string $tempAbsolutePath): self
     {
@@ -136,7 +136,7 @@ class StorageFileInfo
 
     /**
      * @param bool $isUploaded
-     * @return StorageFileInfo
+     * @return StorageObject
      */
     public function setUploadState(bool $isUploaded): self
     {

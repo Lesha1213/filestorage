@@ -11,7 +11,7 @@ use reactivestudio\filestorage\exceptions\FileTypeServiceException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\models\base\AbstractFile;
 use yii\base\InvalidConfigException;
 use yii\di\NotInstantiableException;
@@ -64,9 +64,9 @@ class FileService
 
     /**
      * @param AbstractFile $file
-     * @return StorageFileInfo
+     * @return StorageObject
      */
-    public function takeFromStorage(AbstractFile $file): StorageFileInfo
+    public function takeFromStorage(AbstractFile $file): StorageObject
     {
         return $this->storage->take(HashHelper::encode($file->getRelativePath(), $file->system_name));
     }

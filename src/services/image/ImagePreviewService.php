@@ -15,7 +15,7 @@ use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\interfaces\OperationInterface;
 use reactivestudio\filestorage\models\base\AbstractImage;
 use reactivestudio\filestorage\models\base\preview\AbstractImagePreview;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
@@ -255,7 +255,7 @@ class ImagePreviewService
         $interventionImage->save($previewTempAbsolutePath, 100);
         $size = (int)filesize($previewTempAbsolutePath);
 
-        $storagePreviewInfo = (new StorageFileInfo())
+        $storagePreviewInfo = (new StorageObject())
             ->setTempAbsolutePath($previewTempAbsolutePath)
             ->setRelativePath($this->getPreviewRelativePath($image))
             ->setFileName($this->getPreviewFileName($operation, $previewName, $image->original_extension));
@@ -269,7 +269,7 @@ class ImagePreviewService
     /**
      * @param AbstractImage $image
      * @param string $previewName
-     * @param StorageFileInfo $storagePreviewInfo
+     * @param StorageObject $storagePreviewInfo
      * @param int $size
      *
      * @return AbstractImagePreview
@@ -280,7 +280,7 @@ class ImagePreviewService
     private function createPreviewEntity(
         AbstractImage $image,
         string $previewName,
-        StorageFileInfo $storagePreviewInfo,
+        StorageObject $storagePreviewInfo,
         int $size
     ): AbstractImagePreview {
         /** @var AbstractImagePreview $entity */

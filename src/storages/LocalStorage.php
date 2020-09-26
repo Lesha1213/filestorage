@@ -7,7 +7,7 @@ namespace reactivestudio\filestorage\storages;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\storages\base\AbstractStorage;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\exceptions\StorageException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
@@ -67,24 +67,24 @@ class LocalStorage extends AbstractStorage
     }
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageObject
      * @throws StorageException in case problem with putting file to storage
      */
-    public function put(StorageFileInfo $storageFileInfo): void
+    public function put(StorageObject $storageObject): void
     {
         $destination = $this->getFilesDir() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR
-            . $storageFileInfo->getFileName();
+            . $storageObject->getRelativePath() . DIRECTORY_SEPARATOR
+            . $storageObject->getFileName();
         $destination = FileHelper::normalizePath(Yii::getAlias($destination));
 
         if (null !== $this->fileMode && !chmod($destination, $this->fileMode)) {
             throw new StorageException("Cannot change file mode 'chmod' to {$this->fileMode}");
         }
 
-        StorageHelper::copy($storageFileInfo->getTempAbsolutePath(), $destination);
+        StorageHelper::copy($storageObject->getTempAbsolutePath(), $destination);
 
-        $hash = HashHelper::encode($storageFileInfo->getRelativePath(), $storageFileInfo->getFileName());
-        $storageFileInfo->setPublicUrl($this->getPublicUrl($hash));
+        $hash = HashHelper::encode($storageObject->getRelativePath(), $storageObject->getFileName());
+        $storageObject->setPublicUrl($this->getPublicUrl($hash));
     }
 
     /**
@@ -104,10 +104,10 @@ class LocalStorage extends AbstractStorage
     }
 
     /**
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageFileInfo
      * @throws StorageException in case problem with coping file to temp
      */
-    public function copyToTemp(StorageFileInfo $storageFileInfo): void
+    public function copyToTemp(StorageObject $storageFileInfo): void
     {
         $path = $this->getFilesDir() . DIRECTORY_SEPARATOR
             . $storageFileInfo->getRelativePath() . DIRECTORY_SEPARATOR

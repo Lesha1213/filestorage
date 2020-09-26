@@ -10,7 +10,7 @@ use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\interfaces\FileStrategyInterface;
 use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\base\AbstractFile;
-use reactivestudio\filestorage\storages\dto\StorageFileInfo;
+use reactivestudio\filestorage\storages\dto\StorageObject;
 use Throwable;
 use yii\db\StaleObjectException;
 use yii\helpers\VarDumper;
@@ -63,11 +63,11 @@ abstract class AbstractStrategy implements FileStrategyInterface
     /**
      * @param AbstractFile $file
      * @param string $tempFilePath
-     * @return StorageFileInfo
+     * @return StorageObject
      */
-    protected function createFileStorageInfo(AbstractFile $file, string $tempFilePath): StorageFileInfo
+    protected function createFileStorageInfo(AbstractFile $file, string $tempFilePath): StorageObject
     {
-        return (new StorageFileInfo())
+        return (new StorageObject())
             ->setRelativePath($file->getRelativePath())
             ->setFileName($file->system_name)
             ->setTempAbsolutePath($tempFilePath)
@@ -76,9 +76,9 @@ abstract class AbstractStrategy implements FileStrategyInterface
 
     /**
      * @param AbstractFile $file
-     * @param StorageFileInfo $storageFileInfo
+     * @param StorageObject $storageFileInfo
      */
-    protected function fillEntityAfterPut(AbstractFile $file, StorageFileInfo $storageFileInfo): void
+    protected function fillEntityAfterPut(AbstractFile $file, StorageObject $storageFileInfo): void
     {
         $file->storage_name = $this->storage->getName();
         $file->storage_status = $this->storage::STATUS_IN_STORAGE;
