@@ -72,7 +72,7 @@ class AwsStorage extends AbstractStorage
      */
     protected function copyToStorage(string $tempPath, string $destination): bool
     {
-        return $this->s3Service
+        return (bool)$this->s3Service
             ->commands()
             ->upload($destination, $tempPath)
             ->execute();
@@ -93,7 +93,7 @@ class AwsStorage extends AbstractStorage
      */
     protected function removeFromStorage(string $hash): bool
     {
-        return $this->s3Service
+        return (bool)$this->s3Service
             ->commands()
             ->delete(HashHelper::decode($hash))
             ->execute();
