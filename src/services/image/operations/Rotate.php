@@ -12,7 +12,10 @@ class Rotate extends AbstractOperation
     public function apply(Image $image): void
     {
         if ($image->getWidth() > $image->getHeight()) {
-            $image->rotate($this->rotation->getDegree());
+            $rotation = $this->settings->getRotation();
+            if (null !== $rotation) {
+                $image->rotate($rotation->getDegree());
+            }
         }
 
         parent::apply($image);

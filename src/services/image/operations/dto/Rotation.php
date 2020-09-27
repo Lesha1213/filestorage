@@ -16,6 +16,16 @@ class Rotation
      */
     private $toPortrait = false;
 
+    private function __construct(int $degree, bool $toPortrait = false)
+    {
+
+    }
+
+    public static function create(int $degree, bool $toPortrait = false): self
+    {
+        return new static($degree, $toPortrait);
+    }
+
     /**
      * @return int
      */
@@ -25,29 +35,10 @@ class Rotation
     }
 
     /**
-     * @param int $degree
-     * @return Rotation
-     */
-    public function setDegree(int $degree): self
-    {
-        $this->degree = $degree;
-        return $this;
-    }
-
-    /**
      * @return bool
      */
     public function isToPortrait(): bool
     {
         return $this->toPortrait;
-    }
-
-    /**
-     * @return Rotation
-     */
-    public function setToPortrait(): self
-    {
-        $this->toPortrait = true;
-        return $this;
     }
 }
