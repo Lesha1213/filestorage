@@ -6,10 +6,7 @@ namespace reactivestudio\filestorage\services\image\operations\base;
 
 use Intervention\Image\Constraint;
 use Intervention\Image\Image;
-use reactivestudio\filestorage\services\image\operations\dto\Position;
-use reactivestudio\filestorage\services\image\operations\dto\Quality;
-use reactivestudio\filestorage\services\image\operations\dto\Resolution;
-use reactivestudio\filestorage\services\image\operations\dto\Rotation;
+use reactivestudio\filestorage\services\image\operations\dto\Settings;
 use reactivestudio\filestorage\services\image\operations\structures\OperationStack;
 use reactivestudio\filestorage\interfaces\OperationInterface;
 
@@ -21,41 +18,23 @@ abstract class AbstractOperation implements OperationInterface
     protected $stack;
 
     /**
-     * @var Resolution|null
+     * @var Settings
      */
-    protected $resolution;
+    protected $settings;
 
-    /**
-     * @var Position|null
-     */
-    protected $position;
-
-    /**
-     * @var Rotation|null
-     */
-    protected $rotation;
-
-    /**
-     * @var Quality|null
-     */
-    protected $quality;
-
-    /**
-     * @var bool
-     */
-    protected $isUpSize = false;
-
-    public function __construct()
+    private function __construct(Settings $settings)
     {
         $this->stack = new OperationStack();
+        $this->settings = $settings;
     }
 
     /**
+     * @param Settings $settings
      * @return OperationInterface
      */
-    public function build(): OperationInterface
+    public static function create(Settings $settings): OperationInterface
     {
-        return $this;
+        return (new static($settings))->build();
     }
 
     /**
@@ -68,63 +47,22 @@ abstract class AbstractOperation implements OperationInterface
         }
     }
 
-    /**
-     * @param Resolution $resolution
-     * @return AbstractOperation
-     */
-    public function setResolution(Resolution $resolution): self
-    {
-        $this->resolution = $resolution;
-        return $this;
-    }
-
-    /**
-     * @param Position $position
-     * @return AbstractOperation
-     */
-    public function setPosition(Position $position): self
-    {
-        $this->position = $position;
-        return $this;
-    }
-
-    /**
-     * @param Rotation $rotation
-     * @return AbstractOperation
-     */
-    public function setRotation(Rotation $rotation): self
-    {
-        $this->rotation = $rotation;
-        return $this;
-    }
-
-    /**
-     * @param Quality $quality
-     * @return AbstractOperation
-     */
-    public function setQuality(Quality $quality): self
-    {
-        $this->quality = $quality;
-        return $this;
-    }
-
-    /**
-     * @return AbstractOperation
-     */
-    public function makeUpSize(): self
-    {
-        $this->isUpSize = true;
-        return $this;
-    }
-
     public function getConfig(): string
     {
         $values = [];
-        foreach ($this->arguments() as $argument) {
-            $values[] = $argument . ':' .  $this->argumentToString($argument);
+        foreach ($this->arguments() as $name => $value) {
+            $values[] = "{$name}:{$this->argumentToString($value)}";
         }
 
         return implode(';', $values);
+    }
+
+    /**
+     * @return OperationInterface
+     */
+    protected function build(): OperationInterface
+    {
+        return $this;
     }
 
     /**
@@ -141,7 +79,7 @@ abstract class AbstractOperation implements OperationInterface
     protected function getUpSizeCallback(): callable
     {
         return function (Constraint $constraint) {
-            if ($this->isUpSize) {
+            if ($this->settings->isUpSize()) {
                 $constraint->upsize();
             }
         };

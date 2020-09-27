@@ -10,35 +10,34 @@ use reactivestudio\filestorage\interfaces\OperationInterface;
 
 class Cover extends AbstractOperation
 {
-    public function build(): OperationInterface
-    {
-        if (null !== $this->rotation) {
-            $rotate = (new Rotate())->setRotation($this->rotation);
-            $this->stack->push($rotate);
-        }
-
-        return parent::build();
-    }
-
     public function apply(Image $image): void
     {
         $image->fit(
-            $this->resolution->getWidth(),
-            $this->resolution->getHeight(),
+            $this->settings->getResolution()->getWidth(),
+            $this->settings->getResolution()->getHeight(),
             $this->getUpSizeCallback(),
-            $this->position->toString()
+            $this->settings->getPosition()->toString()
         );
 
         parent::apply($image);
     }
 
+    protected function build(): OperationInterface
+    {
+        if (null !== $this->settings->getRotation()) {
+            $this->stack->push(Rotate::create($this->settings));
+        }
+
+        return parent::build();
+    }
+
     protected function arguments(): array
     {
         return [
-            $this->resolution->getWidth(),
-            $this->resolution->getHeight(),
-            $this->isUpSize,
-            $this->position->toString(),
+            'width' => $this->settings->getResolution()->getWidth(),
+            'height' => $this->settings->getResolution()->getHeight(),
+            'upSize' => $this->settings->isUpSize(),
+            'position' => $this->settings->getPosition()->toString(),
         ];
     }
 }

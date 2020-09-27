@@ -24,10 +24,15 @@ final class Position
      */
     private $y;
 
-    public function __construct(?string $x = null, ?string $y = null)
+    private function __construct(?string $x = null, ?string $y = null)
     {
         $this->x = $x;
         $this->y = $y;
+    }
+
+    public static function create(?string $x = null, ?string $y = null): self
+    {
+        return new static($x, $y);
     }
 
     public function toString(): string
@@ -56,28 +61,8 @@ final class Position
         return $this->x;
     }
 
-    /**
-     * @param string|null $x
-     * @return Position
-     */
-    public function setX(?string $x): self
-    {
-        $this->x = $x;
-        return $this;
-    }
-
     public function getY(): ?string
     {
         return $this->y;
-    }
-
-    /**
-     * @param string|null $y
-     * @return Position
-     */
-    public function setY(?string $y): self
-    {
-        $this->y = $y;
-        return $this;
     }
 }

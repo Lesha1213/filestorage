@@ -16,10 +16,15 @@ final class Resolution
      */
     private $height;
 
-    public function __construct(?int $width, ?int $height)
+    private function __construct(?int $width, ?int $height)
     {
         $this->width = $width;
         $this->height = $height;
+    }
+
+    public static function create(?int $width, ?int $height): self
+    {
+        return new static($width, $height);
     }
 
     /**
@@ -31,30 +36,10 @@ final class Resolution
     }
 
     /**
-     * @param int|null $width
-     * @return Resolution
-     */
-    public function setWidth(?int $width): self
-    {
-        $this->width = $width;
-        return $this;
-    }
-
-    /**
      * @return int|null
      */
     public function getHeight(): ?int
     {
         return $this->height;
-    }
-
-    /**
-     * @param int|null $height
-     * @return Resolution
-     */
-    public function setHeight(?int $height): self
-    {
-        $this->height = $height;
-        return $this;
     }
 }

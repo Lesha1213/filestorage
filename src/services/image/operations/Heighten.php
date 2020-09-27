@@ -10,31 +10,30 @@ use reactivestudio\filestorage\interfaces\OperationInterface;
 
 class Heighten extends AbstractOperation
 {
-    public function build(): OperationInterface
-    {
-        if (null !== $this->rotation) {
-            $rotate = (new Rotate())->setRotation($this->rotation);
-            $this->stack->push($rotate);
-        }
-
-        return parent::build();
-    }
-
     public function apply(Image $image): void
     {
         $image->heighten(
-            $this->resolution->getHeight(),
+            $this->settings->getResolution()->getHeight(),
             $this->getUpSizeCallback()
         );
 
         parent::apply($image);
     }
 
+    protected function build(): OperationInterface
+    {
+        if (null !== $this->settings->getRotation()) {
+            $this->stack->push(Rotate::create($this->settings));
+        }
+
+        return parent::build();
+    }
+
     protected function arguments(): array
     {
         return [
-            $this->resolution->getHeight(),
-            $this->isUpSize,
+            'height' => $this->settings->getResolution()->getHeight(),
+            'upSize' => $this->settings->isUpSize(),
         ];
     }
 }
