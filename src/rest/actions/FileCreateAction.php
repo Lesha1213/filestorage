@@ -20,7 +20,6 @@ class FileCreateAction extends CreateAction
      * {@inheritdoc}
      * @throws FileUploadHttpException
      * @throws InvalidConfigException
-     * @throws UploaderException
      */
     public function run()
     {
@@ -31,10 +30,9 @@ class FileCreateAction extends CreateAction
         /** @var PostUploader $uploader */
         $uploader = Yii::createObject(PostUploader::class);
         $config = $this->buildUploaderConfig();
-        $form = $uploader->buildForm($config);
 
         try {
-            $entity = $uploader->upload($form);
+            $entity = $uploader->upload($config);
         } catch (UploaderException $e) {
             throw new FileUploadHttpException("File upload error: {$e->getMessage()}", 0, $e);
         }
@@ -59,7 +57,7 @@ class FileCreateAction extends CreateAction
         return (new BaseUploaderConfig())
             ->setFileEntityClass($this->modelClass)
             ->setForceMode(true)
-            ->setEntityId(Yii::$app->request->post(PostUploader::PARAM_ENTITY_ID))
+            ->setEntityId((int)Yii::$app->request->post(PostUploader::PARAM_ENTITY_ID))
             ->setDisplayName(Yii::$app->request->post(PostUploader::PARAM_ENTITY_ID))
             ->setCreatedAt($createdAt)
             ->setUpdatedAt($updatedAt);
