@@ -51,12 +51,14 @@ abstract class AbstractUploader implements UploaderInterface
     }
 
     /**
-     * @param FileForm $form
+     * @param AbstractUploaderConfig $config
      * @return AbstractFile
      * @throws UploaderException
      */
-    public function upload(FileForm $form): AbstractFile
+    public function upload(AbstractUploaderConfig $config): AbstractFile
     {
+        $form = $this->buildForm($config);
+
         /** @var AbstractFile $entity */
         try {
             $entity = Yii::createObject($form->fileEntityClass);

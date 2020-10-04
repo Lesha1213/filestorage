@@ -6,7 +6,6 @@ namespace reactivestudio\filestorage\interfaces;
 
 use reactivestudio\filestorage\exceptions\UploaderException;
 use reactivestudio\filestorage\models\base\AbstractFile;
-use reactivestudio\filestorage\models\form\FileForm;
 use reactivestudio\filestorage\uploaders\base\AbstractUploaderConfig;
 
 interface UploaderInterface
@@ -28,15 +27,8 @@ interface UploaderInterface
 
     /**
      * @param AbstractUploaderConfig $config
-     * @return FileForm
-     * @throws UploaderException
-     */
-    public function buildForm(AbstractUploaderConfig $config): FileForm;
-
-    /**
-     * @param FileForm $form
      * @return AbstractFile
      * @throws UploaderException
      */
-    public function upload(FileForm $form): AbstractFile;
+    public function upload(AbstractUploaderConfig $config): AbstractFile;
 }
