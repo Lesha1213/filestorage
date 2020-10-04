@@ -11,32 +11,32 @@ abstract class AbstractUploaderConfig
     /**
      * @var string
      */
-    private $fileEntityClass;
+    protected $fileEntityClass;
 
     /**
      * @var bool
      */
-    private $isForceMode = true;
+    protected $isForceMode = true;
 
     /**
      * @var int|null
      */
-    private $entityId;
+    protected $entityId;
 
     /**
      * @var string|null
      */
-    private $displayName;
+    protected $displayName;
 
     /**
      * @var DateTimeInterface|null
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTimeInterface|null
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @return string
