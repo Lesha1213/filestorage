@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\rest\actions;
 
+use DateTime;
 use reactivestudio\filestorage\exceptions\FileUploadHttpException;
 use reactivestudio\filestorage\exceptions\UploaderException;
+use reactivestudio\filestorage\uploaders\base\AbstractUploaderConfig;
+use reactivestudio\filestorage\uploaders\dto\BaseUploaderConfig;
 use reactivestudio\filestorage\uploaders\PostUploader;
 use yii\base\InvalidConfigException;
 use yii\rest\CreateAction;
@@ -27,8 +30,8 @@ class FileCreateAction extends CreateAction
 
         /** @var PostUploader $uploader */
         $uploader = Yii::createObject(PostUploader::class);
-
-        $form = $uploader->buildForm($this->modelClass);
+        $config = $this->buildUploaderConfig();
+        $form = $uploader->buildForm($config);
 
         try {
             $entity = $uploader->upload($form);
@@ -39,5 +42,26 @@ class FileCreateAction extends CreateAction
         Yii::$app->getResponse()->setStatusCode(201);
 
         return $entity;
+    }
+
+    /**
+     * @return AbstractUploaderConfig
+     */
+    private function buildUploaderConfig(): AbstractUploaderConfig
+    {
+        $createdAt = Yii::$app->request->post(PostUploader::PARAM_CREATED_AT);
+        $createdAt = is_int($createdAt) ? (new DateTime())->setTimestamp($createdAt) : null;
+
+        $updatedAt = Yii::$app->request->post(PostUploader::PARAM_UPDATED_AT);
+        $updatedAt = is_int($updatedAt) ? (new DateTime())->setTimestamp($updatedAt) : null;
+
+
+        return (new BaseUploaderConfig())
+            ->setFileEntityClass($this->modelClass)
+            ->setForceMode(true)
+            ->setEntityId(Yii::$app->request->post(PostUploader::PARAM_ENTITY_ID))
+            ->setDisplayName(Yii::$app->request->post(PostUploader::PARAM_ENTITY_ID))
+            ->setCreatedAt($createdAt)
+            ->setUpdatedAt($updatedAt);
     }
 }
