@@ -7,17 +7,31 @@ namespace reactivestudio\filestorage\interfaces;
 use reactivestudio\filestorage\exceptions\UploaderException;
 use reactivestudio\filestorage\models\base\AbstractFile;
 use reactivestudio\filestorage\models\form\FileForm;
+use reactivestudio\filestorage\uploaders\base\AbstractUploaderConfig;
 
 interface UploaderInterface
 {
+    public const PARAM_UPLOAD_FILE = 'upload_file';
+
     /**
-     * @param string $fileEntityClass
-     * @param array $config
-     *
+     * Параметр запроса для идентификатора сущности, к которой будет привязан файл
+     */
+    public const PARAM_ENTITY_ID = 'entity_id';
+
+    /**
+     * Параметр запроса отображаемого имени файла
+     */
+    public const PARAM_DISPLAY_NAME = 'display_name';
+
+    public const PARAM_CREATED_AT = 'created_at';
+    public const PARAM_UPDATED_AT = 'updated_at';
+
+    /**
+     * @param AbstractUploaderConfig $config
      * @return FileForm
      * @throws UploaderException
      */
-    public function buildForm(string $fileEntityClass, array $config = []): FileForm;
+    public function buildForm(AbstractUploaderConfig $config): FileForm;
 
     /**
      * @param FileForm $form

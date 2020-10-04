@@ -4,40 +4,30 @@ declare(strict_types=1);
 
 namespace reactivestudio\filestorage\uploaders;
 
-use Exception;
 use reactivestudio\filestorage\exceptions\StorageException;
 use reactivestudio\filestorage\exceptions\UploaderException;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\models\form\FileForm;
 use reactivestudio\filestorage\uploaders\base\AbstractUploader;
+use reactivestudio\filestorage\uploaders\base\AbstractUploaderConfig;
+use reactivestudio\filestorage\uploaders\dto\RemoteUploaderConfig;
 use yii\base\InvalidConfigException;
-use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\web\UploadedFile;
 use Yii;
 
 class RemoteUploader extends AbstractUploader
 {
-    public const URL_CONFIG_NAME = 'url';
-
     /**
      * {@inheritDoc}
      */
-    public function buildForm(string $fileEntityClass, array $config = []): FileForm
+    public function buildForm(AbstractUploaderConfig $config): FileForm
     {
-        $form = parent::buildForm($fileEntityClass);
-
-        try {
-            $url = ArrayHelper::getValue($config, static::URL_CONFIG_NAME, '');
-        } catch (Exception $e) {
-            Yii::warning($e->getMessage());
-            $url = '';
-        }
-
-        $form->uploadFile = $this->buildUploadedFile($url);
+        /** @var RemoteUploaderConfig $config */
+        $form = parent::buildForm($config);
+        $form->uploadFile = $this->buildUploadedFile($config->getUrlToFile());
 
         return $form;
-
     }
 
     /**

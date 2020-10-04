@@ -28,13 +28,11 @@ abstract class AbstractUploader implements UploaderInterface
     }
 
     /**
-     * @param string $fileEntityClass
-     * @param array $config
-     *
+     * @param AbstractUploaderConfig $config
      * @return FileForm
      * @throws UploaderException
      */
-    public function buildForm(string $fileEntityClass, array $config = []): FileForm
+    public function buildForm(AbstractUploaderConfig $config): FileForm
     {
         try {
             $form = Yii::createObject(FileForm::class);
@@ -42,8 +40,12 @@ abstract class AbstractUploader implements UploaderInterface
             throw new UploaderException("Error with building form: {$e->getMessage()}", 0, $e);
         }
 
-        $form->fileEntityClass = $fileEntityClass;
-        $form->isForceMode = true;
+        $form->fileEntityClass = $config->getFileEntityClass();
+        $form->isForceMode = $config->isForceMode();
+        $form->entityId = $config->getEntityId();
+        $form->displayName = $config->getDisplayName();
+        $form->createdAt = $config->getCreatedAt() !== null ? $config->getCreatedAt()->getTimestamp() : null;
+        $form->updatedAt = $config->getUpdatedAt() !== null ? $config->getUpdatedAt()->getTimestamp() : null;
 
         return $form;
     }
