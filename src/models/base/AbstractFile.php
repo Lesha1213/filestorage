@@ -10,6 +10,7 @@ use reactivestudio\filestorage\interfaces\StorageInterface;
 use reactivestudio\filestorage\models\query\FileQuery;
 use yii\base\InvalidConfigException;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 use Yii;
@@ -82,10 +83,10 @@ abstract class AbstractFile extends ActiveRecord
     }
 
     /**
-     * @return FileQueryInterface
+     * @return FileQueryInterface|ActiveQueryInterface
      * @throws InvalidConfigException
      */
-    public static function find(): FileQueryInterface
+    public static function find()
     {
         /** @var FileQuery $query */
         $query = Yii::createObject(FileQuery::class, [static::class]);
