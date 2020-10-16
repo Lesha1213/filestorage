@@ -16,6 +16,7 @@ use reactivestudio\filestorage\services\image\dto\PreviewBuildObject;
 use reactivestudio\filestorage\storages\dto\StorageObject;
 use reactivestudio\filestorage\helpers\StorageHelper;
 use reactivestudio\filestorage\helpers\HashHelper;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
@@ -267,6 +268,9 @@ class ImagePreviewService
 
         $buildObject->getInterventionImage()->save($previewTempAbsolutePath, 100);
         $buildObject->setSize((int)filesize($previewTempAbsolutePath));
+
+        $optimizerChain = OptimizerChainFactory::create();
+        $optimizerChain->optimize($previewTempAbsolutePath);
 
         $storageObject = (new StorageObject())
             ->setTempAbsolutePath($previewTempAbsolutePath)
