@@ -80,7 +80,8 @@ abstract class AbstractOperation implements OperationInterface
     {
         $isUpSize = $this->settings->isUpSize();
         return static function (Constraint $constraint) use ($isUpSize) {
-            if ($isUpSize) {
+            if (!$isUpSize) {
+                /** Here we add specific constraint to deny upsize */
                 $constraint->upsize();
             }
         };
