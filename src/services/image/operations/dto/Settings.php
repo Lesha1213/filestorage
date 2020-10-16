@@ -29,11 +29,6 @@ class Settings
     /**
      * @var bool
      */
-    protected $needOptimize = true;
-
-    /**
-     * @var bool
-     */
     protected $isUpSize = false;
 
     /**
@@ -123,24 +118,6 @@ class Settings
     public function setUpSize(bool $isUpSize): self
     {
         $this->isUpSize = $isUpSize;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNeedToOptimize(): bool
-    {
-        return $this->needOptimize;
-    }
-
-    /**
-     * @param bool $mode
-     * @return Settings
-     */
-    public function setOptimizeMode(bool $mode): self
-    {
-        $this->needOptimize = $mode;
         return $this;
     }
 }

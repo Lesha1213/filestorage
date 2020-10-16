@@ -78,8 +78,9 @@ abstract class AbstractOperation implements OperationInterface
      */
     protected function getUpSizeCallback(): callable
     {
-        return function (Constraint $constraint) {
-            if ($this->settings->isUpSize()) {
+        $isUpSize = $this->settings->isUpSize();
+        return static function (Constraint $constraint) use ($isUpSize) {
+            if ($isUpSize) {
                 $constraint->upsize();
             }
         };
