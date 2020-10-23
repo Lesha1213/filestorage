@@ -23,9 +23,7 @@ class FileCreateAction extends CreateAction
      */
     public function run()
     {
-        if ($this->checkAccess) {
-            call_user_func($this->checkAccess, $this->id);
-        }
+        $this->callCheckAccessIfNeeded();
 
         /** @var PostUploader $uploader */
         $uploader = Yii::createObject(PostUploader::class);
@@ -40,6 +38,13 @@ class FileCreateAction extends CreateAction
         Yii::$app->getResponse()->setStatusCode(201);
 
         return $entity;
+    }
+
+    protected function callCheckAccessIfNeeded(): void
+    {
+        if ($this->checkAccess) {
+            call_user_func($this->checkAccess, $this->id);
+        }
     }
 
     /**

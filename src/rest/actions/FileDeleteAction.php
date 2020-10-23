@@ -47,9 +47,7 @@ class FileDeleteAction extends DeleteAction
             throw new ServerErrorHttpException('File does not exists.', 0, $e);
         }
 
-        if ($this->checkAccess) {
-            call_user_func($this->checkAccess, $this->id, $model);
-        }
+        $this->callCheckAccessIfNeeded();
 
         try {
             $this->fileService->removeFromStorage($model);
@@ -62,5 +60,12 @@ class FileDeleteAction extends DeleteAction
         }
 
         Yii::$app->getResponse()->setStatusCode(204);
+    }
+
+    protected function callCheckAccessIfNeeded(): void
+    {
+        if ($this->checkAccess) {
+            call_user_func($this->checkAccess, $this->id);
+        }
     }
 }
