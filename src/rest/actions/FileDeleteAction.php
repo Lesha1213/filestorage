@@ -8,6 +8,7 @@ use reactivestudio\filestorage\exceptions\FileServiceException;
 use reactivestudio\filestorage\exceptions\FileStrategyException;
 use reactivestudio\filestorage\services\FileService;
 use reactivestudio\filestorage\models\base\AbstractFile;
+use yii\db\ActiveRecordInterface;
 use yii\rest\Controller;
 use yii\rest\DeleteAction;
 use yii\web\NotFoundHttpException;
@@ -47,7 +48,7 @@ class FileDeleteAction extends DeleteAction
             throw new ServerErrorHttpException('File does not exists.', 0, $e);
         }
 
-        $this->callCheckAccessIfNeeded();
+        $this->callCheckAccessIfNeeded($model);
 
         try {
             $this->fileService->removeFromStorage($model);
@@ -62,10 +63,13 @@ class FileDeleteAction extends DeleteAction
         Yii::$app->getResponse()->setStatusCode(204);
     }
 
-    protected function callCheckAccessIfNeeded(): void
+    /**
+     * @param ActiveRecordInterface $model
+     */
+    protected function callCheckAccessIfNeeded(ActiveRecordInterface $model): void
     {
         if ($this->checkAccess) {
-            call_user_func($this->checkAccess, $this->id);
+            call_user_func($this->checkAccess, $this->id, $model);
         }
     }
 }
