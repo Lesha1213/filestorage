@@ -123,11 +123,12 @@ class ImagePreviewService
         $interventionImage = $this->imageManager->make($storageObject->getTempAbsolutePath());
 
         foreach ($image::getPreviewEntityClass()::getPossibleNames() as $previewName) {
+            $interventionImageClone = clone $interventionImage;
             $buildObject = (new PreviewBuildObject())
                 ->setOriginalImage($image)
                 ->setOriginalTempAbsolutePath($storageObject->getTempAbsolutePath())
                 ->setPreviewName($previewName)
-                ->setInterventionImage($interventionImage);
+                ->setInterventionImage($interventionImageClone);
 
             $this->buildPreview($buildObject);
         }
