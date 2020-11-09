@@ -200,6 +200,7 @@ abstract class AbstractFile extends ActiveRecord
             /** Working with auto timestamp fields for create and update events */
             [
                 'class' => TimestampBehavior::class,
+                'preserveNonEmptyValues' => true,
             ],
         ];
     }

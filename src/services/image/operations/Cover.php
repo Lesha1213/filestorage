@@ -6,12 +6,15 @@ namespace reactivestudio\filestorage\services\image\operations;
 
 use Intervention\Image\Image;
 use reactivestudio\filestorage\services\image\operations\base\AbstractOperation;
-use reactivestudio\filestorage\interfaces\OperationInterface;
 
 class Cover extends AbstractOperation
 {
     public function apply(Image $image): void
     {
+        if ($this->settings->getOrientate()) {
+            $image->orientate();
+        }
+
         $image->fit(
             $this->settings->getResolution()->getWidth(),
             $this->settings->getResolution()->getHeight(),
@@ -22,15 +25,6 @@ class Cover extends AbstractOperation
         parent::apply($image);
     }
 
-    protected function build(): OperationInterface
-    {
-        if (null !== $this->settings->getRotation()) {
-            $this->stack->push(Rotate::create($this->settings));
-        }
-
-        return parent::build();
-    }
-
     protected function arguments(): array
     {
         return [
@@ -38,6 +32,7 @@ class Cover extends AbstractOperation
             'height' => $this->settings->getResolution()->getHeight(),
             'upSize' => $this->settings->isUpSize(),
             'position' => $this->settings->getPosition()->toString(),
+            'orientate' => $this->settings->getOrientate(),
         ];
     }
 }
