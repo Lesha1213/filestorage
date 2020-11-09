@@ -32,6 +32,11 @@ class Settings
     protected $isUpSize = false;
 
     /**
+     * @var bool
+     */
+    protected $orientate = true;
+
+    /**
      * @return Resolution
      */
     public function getResolution(): Resolution
@@ -118,6 +123,24 @@ class Settings
     public function setUpSize(bool $isUpSize): self
     {
         $this->isUpSize = $isUpSize;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getOrientate(): bool
+    {
+        return $this->orientate;
+    }
+
+    /**
+     * @param bool $orientate
+     * @return Settings
+     */
+    public function setOrientate(bool $orientate): self
+    {
+        $this->orientate = $orientate;
         return $this;
     }
 }

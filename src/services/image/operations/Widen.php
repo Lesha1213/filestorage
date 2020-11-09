@@ -12,6 +12,10 @@ class Widen extends AbstractOperation
 {
     public function apply(Image $image): void
     {
+        if ($this->settings->getOrientate()) {
+            $image->orientate();
+        }
+
         $image->widen(
             $this->settings->getResolution()->getWidth(),
             $this->getUpSizeCallback()
