@@ -12,6 +12,10 @@ class Contain extends AbstractOperation
 {
     public function apply(Image $image): void
     {
+        if ($this->settings->getOrientate()) {
+            $image->orientate();
+        }
+        
         $image->resize(
             $this->settings->getResolution()->getWidth(),
             $this->settings->getResolution()->getHeight(),
@@ -36,6 +40,7 @@ class Contain extends AbstractOperation
             'width' => $this->settings->getResolution()->getWidth(),
             'height' => $this->settings->getResolution()->getHeight(),
             'upSize' => $this->settings->isUpSize(),
+            'orientate' => $this->settings->getOrientate(),
         ];
     }
 }

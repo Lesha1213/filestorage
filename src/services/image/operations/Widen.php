@@ -38,6 +38,7 @@ class Widen extends AbstractOperation
         return [
             'width' => $this->settings->getResolution()->getWidth(),
             'upSize' => $this->settings->isUpSize(),
+            'orientate' => $this->settings->getOrientate(),
         ];
     }
 }
