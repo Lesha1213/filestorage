@@ -6,12 +6,15 @@ namespace reactivestudio\filestorage\services\image\operations;
 
 use Intervention\Image\Image;
 use reactivestudio\filestorage\services\image\operations\base\AbstractOperation;
-use reactivestudio\filestorage\interfaces\OperationInterface;
 
 class Heighten extends AbstractOperation
 {
     public function apply(Image $image): void
     {
+        if ($this->settings->getOrientate()) {
+            $image->orientate();
+        }
+
         $image->heighten(
             $this->settings->getResolution()->getHeight(),
             $this->getUpSizeCallback()
@@ -20,20 +23,12 @@ class Heighten extends AbstractOperation
         parent::apply($image);
     }
 
-    protected function build(): OperationInterface
-    {
-        if (null !== $this->settings->getRotation()) {
-            $this->stack->push(Rotate::create($this->settings));
-        }
-
-        return parent::build();
-    }
-
     protected function arguments(): array
     {
         return [
             'height' => $this->settings->getResolution()->getHeight(),
             'upSize' => $this->settings->isUpSize(),
+            'orientate' => $this->settings->getOrientate(),
         ];
     }
 }

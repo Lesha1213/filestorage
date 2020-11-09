@@ -6,7 +6,6 @@ namespace reactivestudio\filestorage\services\image\operations;
 
 use Intervention\Image\Image;
 use reactivestudio\filestorage\services\image\operations\base\AbstractOperation;
-use reactivestudio\filestorage\interfaces\OperationInterface;
 
 class Contain extends AbstractOperation
 {
@@ -15,7 +14,7 @@ class Contain extends AbstractOperation
         if ($this->settings->getOrientate()) {
             $image->orientate();
         }
-        
+
         $image->resize(
             $this->settings->getResolution()->getWidth(),
             $this->settings->getResolution()->getHeight(),
@@ -23,15 +22,6 @@ class Contain extends AbstractOperation
         );
 
         parent::apply($image);
-    }
-
-    protected function build(): OperationInterface
-    {
-        if (null !== $this->settings->getRotation()) {
-            $this->stack->push(Rotate::create($this->settings));
-        }
-
-        return parent::build();
     }
 
     protected function arguments(): array
