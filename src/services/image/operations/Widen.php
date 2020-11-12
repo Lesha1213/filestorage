@@ -17,7 +17,7 @@ class Widen extends AbstractOperation
 
         $image->widen(
             $this->settings->getResolution()->getWidth(),
-            $this->getUpSizeCallback()
+            $this->getConstraintCallback()
         );
 
         parent::apply($image);

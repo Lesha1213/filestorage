@@ -18,7 +18,7 @@ class Cover extends AbstractOperation
         $image->fit(
             $this->settings->getResolution()->getWidth(),
             $this->settings->getResolution()->getHeight(),
-            $this->getUpSizeCallback(),
+            $this->getConstraintCallback(),
             $this->settings->getPosition()->toString()
         );
 
