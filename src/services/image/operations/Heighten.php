@@ -17,7 +17,7 @@ class Heighten extends AbstractOperation
 
         $image->heighten(
             $this->settings->getResolution()->getHeight(),
-            $this->getUpSizeCallback()
+            $this->getConstraintCallback()
         );
 
         parent::apply($image);

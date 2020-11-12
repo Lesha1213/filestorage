@@ -138,6 +138,40 @@ class ImagePreviewService
 
     /**
      * @param AbstractImage $image
+     * @param string $previewName
+     *
+     * @return AbstractImagePreview
+     * @throws ImagePreviewServiceException
+     */
+    public function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
+    {
+        try {
+            $storageObject = $this->storage->take($image->hash);
+        } catch (StorageException $e) {
+            throw new ImagePreviewServiceException("Error creating preview: {$e->getMessage()}", 0, $e);
+        }
+
+        $this->storage->copyToTemp($storageObject);
+
+        $buildObject = (new PreviewBuildObject())
+            ->setOriginalImage($image)
+            ->setOriginalTempAbsolutePath($storageObject->getTempAbsolutePath())
+            ->setPreviewName($previewName)
+            ->setInterventionImage($this->imageManager->make($storageObject->getTempAbsolutePath()));
+
+        $oldPreview = $this->findPreview($image, $previewName);
+        if (null !== $oldPreview) {
+            $this->clearPreview($oldPreview);
+        }
+
+        $preview = $this->buildPreview($buildObject);
+        $this->storage->removeFromTemp($storageObject);
+
+        return $preview;
+    }
+
+    /**
+     * @param AbstractImage $image
      * @throws ImagePreviewServiceException
      */
     public function clearPreviews(AbstractImage $image): void
@@ -208,40 +242,6 @@ class ImagePreviewService
                 'name' => $previewName,
             ])
             ->one($image::getDb());
-
-        return $preview;
-    }
-
-    /**
-     * @param AbstractImage $image
-     * @param string $previewName
-     *
-     * @return AbstractImagePreview
-     * @throws ImagePreviewServiceException
-     */
-    private function createPreview(AbstractImage $image, string $previewName): AbstractImagePreview
-    {
-        try {
-            $storageObject = $this->storage->take($image->hash);
-        } catch (StorageException $e) {
-            throw new ImagePreviewServiceException("Error creating preview: {$e->getMessage()}", 0, $e);
-        }
-
-        $this->storage->copyToTemp($storageObject);
-
-        $buildObject = (new PreviewBuildObject())
-            ->setOriginalImage($image)
-            ->setOriginalTempAbsolutePath($storageObject->getTempAbsolutePath())
-            ->setPreviewName($previewName)
-            ->setInterventionImage($this->imageManager->make($storageObject->getTempAbsolutePath()));
-
-        $oldPreview = $this->findPreview($image, $previewName);
-        if (null !== $oldPreview) {
-            $this->clearPreview($oldPreview);
-        }
-
-        $preview = $this->buildPreview($buildObject);
-        $this->storage->removeFromTemp($storageObject);
 
         return $preview;
     }
