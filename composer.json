@@ -3,7 +3,7 @@
     "description": "Yii2 component for storage files",
     "type": "library",
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.1",
         "yiisoft/yii2": "~2.0",
         "frostealth/yii2-aws-s3": "^2.1",
         "intervention/image": "^2.5",
