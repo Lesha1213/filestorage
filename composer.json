@@ -1,5 +1,5 @@
 {
-    "name": "Lesha1213/filestorage",
+    "name": "lesha1213/filestorage",
     "description": "Yii2 component for storage files",
     "type": "library",
     "require": {
