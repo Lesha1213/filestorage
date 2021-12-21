@@ -8,7 +8,8 @@
         "frostealth/yii2-aws-s3": "^2.1",
         "intervention/image": "^2.5",
         "spatie/image-optimizer": "^1.2",
-        "ext-imagick": "*"
+        "ext-imagick": "*",
+        "ext-fileinfo": "*"
     },
     "license": "MIT",
     "authors": [

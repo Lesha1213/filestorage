@@ -13,6 +13,7 @@ use reactivestudio\filestorage\models\base\AbstractFile;
 use reactivestudio\filestorage\models\form\FileForm;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
+use yii\web\UploadedFile;
 use Yii;
 
 abstract class AbstractUploader implements UploaderInterface
@@ -91,6 +92,22 @@ abstract class AbstractUploader implements UploaderInterface
     }
 
     /**
+     * @param UploadedFile $uploadedFile
+     * @return string
+     */
+    protected function getTempFileMimeType(UploadedFile $uploadedFile): string
+    {
+        $defaultType = $uploadedFile->type;
+        $path = $uploadedFile->tempName;
+        $fmime = new \finfo(FILEINFO_MIME_TYPE);
+        if (false === ($mime = $fmime->file($path))) {
+            return $defaultType;
+        } else {
+            return $mime;
+        }
+    }
+
+    /**
      * @param AbstractFile $entity
      * @param FileForm $form
      */
@@ -106,7 +123,7 @@ abstract class AbstractUploader implements UploaderInterface
 
         $entity->hash = HashHelper::encode($entity->getRelativePath(), $entity->system_name);
 
-        $entity->mime = $form->uploadFile->type;
+        $entity->mime = $this->getTempFileMimeType($form->uploadFile);
         $entity->size = $form->uploadFile->size;
 
         if (null !== $form->createdAt) {
