@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\models\query;
 
 use reactivestudio\filestorage\interfaces\FileQueryInterface;

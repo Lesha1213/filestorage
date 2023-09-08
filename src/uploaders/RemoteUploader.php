@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\uploaders;
 
 use reactivestudio\filestorage\exceptions\StorageException;
@@ -44,6 +42,7 @@ class RemoteUploader extends AbstractUploader
         }
 
         try {
+            /* @var $uploadFile UploadedFile */
             $uploadFile = Yii::createObject(UploadedFile::class);
         } catch (InvalidConfigException $e) {
             throw new UploaderException("Error with creating UploadFile: {$e->getMessage()}", 0, $e);

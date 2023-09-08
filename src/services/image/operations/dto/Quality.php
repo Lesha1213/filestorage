@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\services\image\operations\dto;
 
 class Quality
@@ -26,6 +24,14 @@ class Quality
     public static function best(): self
     {
         return new static(static::BEST);
+    }
+
+    /**
+     * @return Quality
+     */
+    public static function defaults(): self
+    {
+        return new static(static::GOOD);
     }
 
     /**
