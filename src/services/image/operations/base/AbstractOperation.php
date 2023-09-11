@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\services\image\operations\base;
 
 use Intervention\Image\Constraint;
@@ -58,6 +56,14 @@ abstract class AbstractOperation implements OperationInterface
     }
 
     /**
+     * @return Settings
+     */
+    public function getSettings(): Settings
+    {
+        return $this->settings;
+    }
+
+    /**
      * @return OperationInterface
      */
     protected function build(): OperationInterface
@@ -95,10 +101,6 @@ abstract class AbstractOperation implements OperationInterface
     {
         if (is_bool($value)) {
             return $value ? 'true' : 'false';
-        }
-
-        if (is_int($value)) {
-            return (string)$value;
         }
 
         return (string)$value;

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\models\base;
 
 use Exception;
@@ -41,7 +39,7 @@ abstract class AbstractImage extends AbstractFile
     }
 
     /**
-     * @return PreviewInterface
+     * @return string|PreviewInterface
      */
     abstract public static function getPreviewEntityClass(): string;
 

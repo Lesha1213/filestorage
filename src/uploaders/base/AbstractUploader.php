@@ -1,9 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\uploaders\base;
 
+use finfo;
 use reactivestudio\filestorage\exceptions\FileServiceException;
 use reactivestudio\filestorage\helpers\HashHelper;
 use reactivestudio\filestorage\services\FileService;
@@ -36,6 +35,7 @@ abstract class AbstractUploader implements UploaderInterface
     public function buildForm(AbstractUploaderConfig $config): FileForm
     {
         try {
+            /* @var $form FileForm */
             $form = Yii::createObject(FileForm::class);
         } catch (InvalidConfigException $e) {
             throw new UploaderException("Error with building form: {$e->getMessage()}", 0, $e);
@@ -99,7 +99,7 @@ abstract class AbstractUploader implements UploaderInterface
     {
         $defaultType = $uploadedFile->type;
         $path = $uploadedFile->tempName;
-        $fmime = new \finfo(FILEINFO_MIME_TYPE);
+        $fmime = new finfo(FILEINFO_MIME_TYPE);
         if (false === ($mime = $fmime->file($path))) {
             return $defaultType;
         } else {

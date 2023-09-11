@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\services\image\operations\dto;
 
 final class Position
@@ -32,7 +30,7 @@ final class Position
 
     public static function create(?string $x = null, ?string $y = null): self
     {
-        return new static($x, $y);
+        return new self($x, $y);
     }
 
     public function toString(): string

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\services\image\operations\dto;
 
 final class Resolution
@@ -24,7 +22,7 @@ final class Resolution
 
     public static function create(?int $width, ?int $height): self
     {
-        return new static($width, $height);
+        return new self($width, $height);
     }
 
     /**

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\services\image\operations\dto;
 
 class Settings
@@ -95,7 +93,7 @@ class Settings
      */
     public function getQuality(): Quality
     {
-        return $this->quality ?? Quality::best();
+        return $this->quality ?? Quality::defaults();
     }
 
     /**

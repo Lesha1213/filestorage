@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\models\form;
 
 use reactivestudio\filestorage\models\base\AbstractFile;
@@ -11,7 +9,7 @@ use yii\web\UploadedFile;
 class FileForm extends Model
 {
     /**
-     * @var AbstractFile
+     * @var string|AbstractFile
      */
     public $fileEntityClass;
 

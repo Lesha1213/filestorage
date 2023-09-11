@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\services\image;
 
 use Exception;
@@ -57,7 +55,7 @@ class ImagePreviewService
     {
         try {
             /** @var OperationInterface|null $operation */
-            $operation = ArrayHelper::getValue($image::getPreviewEntityClass()::operations(), $previewName, null);
+            $operation = ArrayHelper::getValue($image::getPreviewEntityClass()::operations(), $previewName);
         } catch (Exception $e) {
             throw new ImagePreviewServiceException("Error: {$e->getMessage()} for preview: {$previewName}");
         }
@@ -270,7 +268,16 @@ class ImagePreviewService
         $buildObject->getInterventionImage()->save($previewTempAbsolutePath, 100);
         $buildObject->setSize((int)filesize($previewTempAbsolutePath));
 
-        $optimizerChain = OptimizerChainFactory::create();
+        $previewSettings = $buildObject->getOperation()->getSettings();
+
+        $optimizerChain = OptimizerChainFactory::create(
+            [
+                'quality' => $previewSettings
+                    ->getQuality()
+                    ->getValue($buildObject->getInterventionImage()->mime())
+            ]
+        );
+
         $optimizerChain->optimize($previewTempAbsolutePath);
 
         $storageObject = (new StorageObject())

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace reactivestudio\filestorage\models\base\preview;
 
 use reactivestudio\filestorage\interfaces\PreviewInterface;
