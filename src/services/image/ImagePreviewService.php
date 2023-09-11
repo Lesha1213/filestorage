@@ -272,7 +272,9 @@ class ImagePreviewService
 
         $optimizerChain = OptimizerChainFactory::create(
             [
-                'quality' => $previewSettings->getQuality()
+                'quality' => $previewSettings
+                    ->getQuality()
+                    ->getValue($buildObject->getInterventionImage()->mime())
             ]
         );
 
