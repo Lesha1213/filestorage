@@ -2,6 +2,8 @@
 
 namespace reactivestudio\filestorage\services\image\operations\dto;
 
+use reactivestudio\filestorage\interfaces\ImageOptimizerInterface;
+
 class Settings
 {
     /**
@@ -23,6 +25,11 @@ class Settings
      * @var Quality|null
      */
     protected $quality;
+
+    /**
+     * @var ImageOptimizerInterface|null
+     */
+    protected $optimizer;
 
     /**
      * @var bool
@@ -140,5 +147,21 @@ class Settings
     {
         $this->orientate = $orientate;
         return $this;
+    }
+
+    /**
+     * @return ImageOptimizerInterface|null
+     */
+    public function getOptimizer(): ?ImageOptimizerInterface
+    {
+        return $this->optimizer;
+    }
+
+    /**
+     * @param ImageOptimizerInterface|null $optimizer
+     */
+    public function setOptimizer(?ImageOptimizerInterface $optimizer): void
+    {
+        $this->optimizer = $optimizer;
     }
 }
