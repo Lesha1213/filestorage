@@ -159,9 +159,11 @@ class Settings
 
     /**
      * @param ImageOptimizerInterface|null $optimizer
+     * @return Settings
      */
-    public function setOptimizer(?ImageOptimizerInterface $optimizer): void
+    public function setOptimizer(?ImageOptimizerInterface $optimizer): Settings
     {
         $this->optimizer = $optimizer;
+        return $this;
     }
 }
